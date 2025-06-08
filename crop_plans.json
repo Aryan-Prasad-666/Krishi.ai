@@ -1,62 +1,32 @@
 [
   {
     "crop_name": "Rice",
-    "sowing_time": "June-July",
-    "cultivation_tips": "Ensure proper water management and use high-yielding varieties like Ranjit and Bahadur. Alluvial soils are highly suitable. Refer to the Package of Practices for Kharif Crops of Assam for detailed guidance.",
-    "expected_yield": "2224 kg/ha (as of 2021)"
+    "sowing_time": "June - July",
+    "cultivation_tips": "Ensure proper water management and drainage. Use high-yielding varieties suitable for alluvial soil. Apply fertilizers based on soil testing.",
+    "expected_yield": "20-25 quintals/acre"
   },
   {
     "crop_name": "Maize",
-    "sowing_time": "May-June",
-    "cultivation_tips": "Requires a temperature between 21\u00b0C to 27\u00b0C. Ensure moderate rainfall. Old alluvial soil is preferable.",
-    "expected_yield": "Varies"
+    "sowing_time": "June - July",
+    "cultivation_tips": "Select hybrid varieties. Ensure good drainage. Apply balanced fertilizers and micronutrients. Practice intercropping with pulses.",
+    "expected_yield": "18-20 quintals/acre"
   },
   {
-    "crop_name": "Cotton",
-    "sowing_time": "May-June",
-    "cultivation_tips": "Cultivation on ridges across the slopes conserves water, reduces soil erosion and improves yield. Follow irrigation scheduling based on rainfall.",
-    "expected_yield": "Varies"
+    "crop_name": "Pigeon Pea (Tur)",
+    "sowing_time": "June - July",
+    "cultivation_tips": "Use improved varieties. Provide proper drainage. Apply phosphatic fertilizers. Implement integrated pest management.",
+    "expected_yield": "10-12 quintals/acre"
   },
   {
-    "crop_name": "Black Gram (Urd)",
-    "sowing_time": "June-July",
-    "cultivation_tips": "Sow at a distance of 30-45 cm with 10 cm plant spacing.",
-    "expected_yield": "Varies"
+    "crop_name": "Pearl Millet (Bajra)",
+    "sowing_time": "July",
+    "cultivation_tips": "Sow with the onset of monsoon. Use drought-resistant varieties. Apply nitrogenous fertilizers. Practice timely weeding.",
+    "expected_yield": "8-10 quintals/acre"
   },
   {
-    "crop_name": "Groundnut",
-    "sowing_time": "June-July",
-    "cultivation_tips": "Requires well-drained alluvial soil. Ensure proper nutrient management.",
-    "expected_yield": "Varies"
-  },
-  {
-    "crop_name": "Soybean",
-    "sowing_time": "June-July",
-    "cultivation_tips": "Harvest when leaves turn yellow and start dropping.",
-    "expected_yield": "375-500 kg/ha"
-  },
-  {
-    "crop_name": "Jute",
-    "sowing_time": "March-May",
-    "cultivation_tips": "Requires high rainfall and fertile alluvial soil. Proper drainage is essential.",
-    "expected_yield": "Varies"
-  },
-  {
-    "crop_name": "Sugarcane",
-    "sowing_time": "February-March",
-    "cultivation_tips": "Requires well-drained alluvial soil and a long growing season.",
-    "expected_yield": "Varies"
-  },
-  {
-    "crop_name": "Broom grass",
-    "sowing_time": "June-July",
-    "cultivation_tips": "Plant the slips/rhizome in fertile soil. Apply Farmyard manure.",
-    "expected_yield": "Varies"
-  },
-  {
-    "crop_name": "Pulses (Green gram)",
-    "sowing_time": "June-July",
-    "cultivation_tips": "Suitable for alluvial soils. Ensure proper drainage.",
-    "expected_yield": "Varies"
+    "crop_name": "Green Gram (Moong)",
+    "sowing_time": "June - July",
+    "cultivation_tips": "Select early-maturing varieties. Ensure proper drainage. Apply Rhizobium culture for nitrogen fixation. Practice intercropping.",
+    "expected_yield": "6-8 quintals/acre"
   }
 ]

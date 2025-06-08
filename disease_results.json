@@ -1,33 +1,33 @@
 {
-  "disease": "Powdery mildew",
-  "plant": "Cherry",
-  "symptoms": "Powdery mildew is characterized by white or gray powdery spots on the surfaces of leaves, stems, and sometimes fruits. These spots can expand to cover large portions of the plant. Severely affected leaves may turn yellow or brown and eventually die.",
-  "remedies": "Natural: Prune infected areas to improve air circulation. Apply neem oil or potassium bicarbonate spray weekly. Chemical: Use myclobutanil or sulfur-based fungicides, following label instructions, especially during humid conditions. Prevent: Plant cherry varieties with powdery mildew resistance. Ensure good air circulation by proper spacing and pruning. Avoid overhead watering to reduce humidity. Regularly monitor plants for early signs of infection and act promptly.",
+  "disease": "Late blight",
+  "plant": "Tomato",
+  "symptoms": "Symptoms of late blight include the appearance of dark, water-soaked spots on leaves, which rapidly enlarge and may be accompanied by a white, cottony growth on the undersides. Stems and fruits can also be affected, leading to significant yield losses if not controlled.",
+  "remedies": "Natural: Remove and destroy infected leaves and fruit promptly. Apply copper-based fungicides or neem oil weekly as a preventative. Ensure good air circulation. Chemical: Use protectant fungicides like chlorothalonil or mancozeb preventatively, rotating with systemic fungicides like mefenoxam or protectants like fluazinam if disease appears. Follow label instructions carefully. Prevent: Select disease-resistant tomato varieties. Practice crop rotation, avoiding planting tomatoes in the same area for at least three years. Avoid overhead watering to reduce leaf wetness and humidity.",
   "resources": [
     {
-      "title": "Cherry Powdery Mildew | WSU Tree Fruit",
-      "link": "https://treefruit.wsu.edu/crop-protection/disease-management/cherry-powdery-mildew/",
-      "summary": "Discusses that humid conditions favor cherry powdery mildew and that a well-pruned canopy will promote more air flow and leaf drying, reducing these humid conditions favorable for the disease."
+      "title": "Late Blight of Tomatoes | Extension | West Virginia University",
+      "link": "https://extension.wvu.edu/lawn-gardening-pests/plant-disease/fruit-vegetable-diseases/late-blight-tomatoes",
+      "summary": "Provides information on identifying and treating late blight in tomatoes, including the recommendation to continue weekly spray applications and to remove and destroy severely infected plants."
     },
     {
-      "title": "Management of Cherry Powdery Mildew",
-      "link": "https://www.canr.msu.edu/uploads/files/Research_Center/NW_Mich_Hort/Pests_IPM_Mgmt/MgmtCherryPowderyMildew.pdf",
-      "summary": "Details the use of strobilurins as effective fungicides in mildew suppression, also noting their efficacy in controlling leaf spot."
+      "title": "Tomato Late Blight | NC State Extension Publications",
+      "link": "https://content.ces.ncsu.edu/tomato-late-blight",
+      "summary": "Offers guidance on applying fungicides preventatively and after disease detection, emphasizing the importance of alternating products for effective control."
     },
     {
-      "title": "Pest Management Guide for Cherries - OSU Extension Service",
-      "link": "https://extension.oregonstate.edu/sites/extd8/files/documents/em8329.pdf",
-      "summary": "A guide listing recommendations for insect, mite, and disease control in cherry orchards, including chemicals, formulations, and application rates."
+      "title": "Tomato Blight: How to Prevent and Treat ... | MasterClass",
+      "link": "https://www.masterclass.com/articles/tomato-blight-guide",
+      "summary": "Details the essential step of removing and destroying any affected area of the tomato plant as a primary treatment method."
     },
     {
-      "title": "Cherry Powdery Mildew Handout (English and Spanish)",
-      "link": "https://treefruit.wsu.edu/cherry-powdery-mildew-handout-english-and-spanish/",
-      "summary": "Provides a handout in both English and Spanish regarding cherry powdery mildew, supported by the WSU Tree Fruit Endowment."
+      "title": "Tomato Late Blight: Identification and Management",
+      "link": "https://barron.extension.wisc.edu/files/2023/02/Tomato-Late-Blight.pdf",
+      "summary": "Outlines strategies for managing late blight, including planting resistant cultivars and eliminating volunteer tomato plants."
     },
     {
-      "title": "IPM Note: Cherry Powdery Mildew",
-      "link": "https://s3-us-west-2.amazonaws.com/treefruit.wsu.edu/wp-content/uploads/2017/05/CPM_2017-5-09.pdf",
-      "summary": "Explains that powdery mildews do not need free water to germinate, but germination and fungal growth are favored by high humidity."
+      "title": "How to Identify, Control and Prevent Blight on Your Tomatoes | GardenTech",
+      "link": "https://www.gardentech.com/blog/pest-id-and-prevention/fight-blight-on-your-tomatoes",
+      "summary": "Recommends removing affected leaves, disposing of them properly, and mulching around the base of the plant to prevent the spread of blight."
     }
   ]
 }

@@ -72,6 +72,13 @@ class DiseaseResult(BaseModel):
     remedies: str
     resources: List[Dict[str, str]]
 
+# Pydantic model for crop planning results
+class CropPlan(BaseModel):
+    crop_name: str
+    sowing_time: str
+    cultivation_tips: str
+    expected_yield: str
+
 # Custom tool to filter schemes based on user criteria
 class SchemeFilterTool(BaseTool):
     name: str = Field(default="SchemeFilterTool", description="Filters schemes based on user criteria with priority.")
@@ -153,9 +160,45 @@ class CropDiseaseAPI(BaseTool):
             logger.error(f"Error calling Crop Disease API: {str(e)}")
             return f"Error calling Crop Disease API: {e}"
 
+# Custom tool for soil type detection
+class SoilTypeAPI(BaseTool):
+    name: str = Field(default="SoilTypeAPI", description="Tool to detect soil type based on location.")
+    description: str = Field(default="Identifies soil type by querying an external soil database API based on location.")
+
+    def _run(self, location: str) -> str:
+        try:
+            # Simulated API call (replace with actual soil database API if available)
+            soil_map = {
+                'assam': 'Alluvial',
+                'punjab': 'Alluvial',
+                'tamil nadu': 'Red',
+                'maharashtra': 'Black',
+                'karnataka': 'Red',
+                'gujarat': 'Sandy'
+            }
+            location = location.lower().strip()
+            for key, value in soil_map.items():
+                if key in location:
+                    return value
+            return 'Unknown'
+        except Exception as e:
+            logger.error(f"Error detecting soil type: {str(e)}")
+            return 'Unknown'
+
 # Instantiate tools
 scheme_filter_tool = SchemeFilterTool()
 crop_disease_tool = CropDiseaseAPI()
+soil_type_tool = SoilTypeAPI()
+
+# Agent for crop planning
+crop_planner = Agent(
+    role="Crop Planning Expert",
+    goal="Generate personalized crop recommendations based on location, season, soil type, and land size.",
+    backstory="An AI agronomist specializing in crop selection and cultivation advice for Indian farmers.",
+    tools=[serper_tool, soil_type_tool],
+    verbose=True,
+    llm=llm
+)
 
 # Agents for schemes
 scheme_researcher = Agent(
@@ -215,6 +258,136 @@ def get_session_history(assistant_type: str):
 @app.route('/')
 def index():
     return render_template('home.html')
+
+@app.route('/api/get_soil_type', methods=['POST'])
+def get_soil_type():
+    try:
+        data = request.get_json()
+        if not data or 'location' not in data:
+            return jsonify({"error": "Location is required"}), 400
+
+        location = data['location'].strip()
+        if not location:
+            return jsonify({"error": "Location cannot be empty"}), 400
+
+        soil_type = soil_type_tool._run(location)
+        return jsonify({"soil_type": soil_type}), 200
+    except Exception as e:
+        logger.error(f"Error in get_soil_type: {str(e)}")
+        return jsonify({"error": f"Error detecting soil type: {str(e)}"}), 500
+
+@app.route('/crop_planning', methods=['GET', 'POST'])
+def crop_planning():
+    error_message = None
+    plans = []
+    form_submitted = False
+    output_file = 'crop_plans.json'
+
+    if request.method == 'POST':
+        try:
+            user_data = {
+                'location': request.form.get('location', ''),
+                'season': request.form.get('season', ''),
+                'soil_type': request.form.get('soil_type', ''),
+                'land_size': request.form.get('land_size', '')
+            }
+
+            required_fields = ['location', 'season', 'soil_type', 'land_size']
+            if not all(user_data[field] for field in required_fields):
+                error_message = "All fields are required."
+                return render_template('crop_planning.html', error_message=error_message, plans=plans, form_submitted=True)
+
+            search_task = Task(
+                description=(
+                    f"Search for suitable crops for a farmer in {user_data['location']} during the {user_data['season']} season, "
+                    f"with {user_data['soil_type']} soil and {user_data['land_size']} acres of land. "
+                    f"Use the SerperDevTool to find relevant agricultural data for India. "
+                    f"Return a JSON list of 3-5 crop recommendations with crop_name, sowing_time, cultivation_tips, and expected_yield, "
+                    f"ensuring the output is a valid JSON string without markdown code fences, "
+                    f"compatible with the following schema: "
+                    f"{json.dumps([{'crop_name': 'string', 'sowing_time': 'string', 'cultivation_tips': 'string', 'expected_yield': 'string'}])}"
+                ),
+                expected_output="A JSON list of 3-5 crop recommendations with crop_name, sowing_time, cultivation_tips, and expected_yield.",
+                agent=crop_planner,
+                output_file=output_file
+            )
+
+            crew = Crew(
+                agents=[crop_planner],
+                tasks=[search_task],
+                verbose=True
+            )
+
+            @retry(
+                stop=stop_after_attempt(3),
+                wait=wait_exponential(multiplier=1, min=4, max=10),
+                retry=retry_if_exception_type(Exception),
+                after=lambda retry_state: logger.debug(f"Retry attempt {retry_state.attempt_number} failed with {retry_state.outcome.exception()}")
+            )
+            def execute_crew():
+                return crew.kickoff()
+
+            try:
+                result = execute_crew()
+            except Exception as e:
+                logger.error(f"Crew execution failed after retries: {str(e)}")
+                error_message = "The crop planning service is temporarily unavailable. Please try again later."
+                return render_template('crop_planning.html', error_message=error_message, plans=plans, form_submitted=True)
+
+            try:
+                if os.path.exists(output_file):
+                    with open(output_file, 'r', encoding='utf-8') as f:
+                        content = f.read().strip()
+
+                    raw_output_file = 'crop_plans_raw.txt'
+                    with open(raw_output_file, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                    logger.debug(f"Raw output saved to {raw_output_file}: {content}")
+
+                    clean_content = content
+                    if content.startswith('```json') and content.endswith('```'):
+                        clean_content = '\n'.join(content.splitlines()[1:-1]).strip()
+                    elif content.startswith('```') and content.endswith('```'):
+                        clean_content = '\n'.join(content.splitlines()[1:-1]).strip()
+
+                    if not clean_content:
+                        error_message = "Output file is empty after cleaning."
+                        logger.error(error_message)
+                        return render_template('crop_planning.html', error_message=error_message, plans=plans, form_submitted=True)
+
+                    try:
+                        plans_data = json.loads(clean_content)
+                    except json.JSONDecodeError as e:
+                        logger.error(f"Error parsing JSON from {output_file}: {e}")
+                        error_message = f"Error processing crop plans: {e}"
+                        return render_template('crop_planning.html', error_message=error_message, plans=plans, form_submitted=True)
+
+                    if not isinstance(plans_data, list):
+                        error_message = "Crop plans data is not a valid JSON list."
+                        logger.error(error_message)
+                        return render_template('crop_planning.html', error_message=error_message, plans=plans, form_submitted=True)
+
+                    with open(output_file, 'w', encoding='utf-8') as f:
+                        json.dump(plans_data, f, indent=2)
+                    logger.debug(f"Saved cleaned JSON to {output_file}")
+
+                    plans = [CropPlan(**plan) for plan in plans_data if isinstance(plan, dict)]
+                    if not plans:
+                        error_message = "No valid crop plans found matching your criteria."
+                        logger.warning(error_message)
+                else:
+                    error_message = f"Output file {output_file} not found."
+                    logger.error(error_message)
+            except Exception as e:
+                logger.error(f"Error processing {output_file}: {e}")
+                error_message = f"Error processing crop plans: {e}"
+
+            form_submitted = True
+        except Exception as e:
+            logger.error(f"Error fetching crop plans: {e}")
+            error_message = "An unexpected error occurred during crop planning. Please try again later."
+
+    return render_template('crop_planning.html', plans=plans, error_message=error_message, form_submitted=form_submitted)
 
 @app.route('/schemes', methods=['GET', 'POST'])
 def schemes():
@@ -850,7 +1023,7 @@ def analyze_document():
                     "summary": "ಇದು ವೈಯಕ್ತಿಕ ಮತ್ತು ಆರ್ಥಿಕ ವಿವರಗಳನ್ನು ಕೋರುವ ಸಾಲದ ಅರ್ಜಿ ನಮೂನೆಯಾಗಿದೆ.",
                     "required_info": ["ಹೆಸರು ಮತ್ತು ವಿಳಾಸ", "ಮಾಸಿಕ ಆದಾಯ", "ಸಾಲದ ಮೊತ್ತ", "ಸಾಲದ ಉದ್ದೇಶ", "ಮರುಪಾವತಿ ಅವಧಿ"],
                     "instructions": ["ವೈಯಕ್ತಿಕ ವಿವರಗಳನ್ನು ದೊಡ್ಡ ಅಕ್ಷರಗಳಲ್ಲಿ ಭರ್ತಿ ಮಾಡಿ", "ನಿಖರವಾದ ಆದಾಯವನ್ನು ಒದಗಿಸಿ", "ಸಾಲದ ಉದ್ದೇಶವನ್ನು ಸ್ಪಷ್ಟವಾಗಿ ತಿಳಿಸಿ", "ಬ್ಯಾಂಕ್ ವಿವರಗಳನ್ನು ಸೇರಿಸಿ", "ಫಾರ್ಮ್‌ಗೆ ಸಹಿ ಮಾಡಿ"],
-                    "notes": "ಆಧಾರ್/ಪ್ಯಾನ್, ವಿಳಾಸದ ಪ್ರಮಾಣಪತ್ರ ಮತ್ತು ಆದಾಯದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಲಗತ್ತಿಸಿ. * ಗುರುತಿನ ಎಲ್ಲಾ ಕ್ಷೇತ್ರಗಳು ಕಡ್ಡಾಯವಾಗಿವೆ."
+                    "notes": "ಆಧಾರ್/ಪ್ಯಾನ್, ವಿಳಾಸದ ಪುರಾವೆ ಮತ್ತು ಆದಾಯದ ಪುರಾವೆಯನ್ನು ಲಗತ್ತಿಸಿ. * ಗುರುತಿನ ಎಲ್ಲಾ ಕ್ಷೇತ್ರಗಳು ಕಡ್ಡಾಯವಾಗಿವೆ."
                 }}
             }}
             """

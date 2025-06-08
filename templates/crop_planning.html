@@ -258,8 +258,8 @@
                     </div>
                     <div>
                         <label for="soil_type" class="block text-sm font-medium text-gray-700">Soil Type</label>
-                        <select id="soil_type" name="soil_type" class="mt-1" disabled>
-                            <option value="" selected>Detected automatically</option>
+                        <select id="soil_type" name="soil_type" class="mt-1" data-translate-placeholder="form_soil_type_placeholder" required>
+                            <option value="" disabled selected>Select soil type</option>
                             <option value="Alluvial">Alluvial</option>
                             <option value="Black">Black</option>
                             <option value="Red">Red</option>
@@ -282,9 +282,6 @@
         <div class="error-message" id="errorMessage">{{ error_message }}</div>
         {% endif %}
 
-        <!-- Debug Output -->
-        <p>Debug: form_submitted={{ form_submitted }}, plans_count={{ plans|length }}</p>
-
         {% if form_submitted and plans %}
         <h3 data-translate="crop_results_title">Recommended Crops</h3>
         <div class="results-grid">
@@ -297,7 +294,7 @@
             </div>
             {% endfor %}
         </div>
-        {% elif form_submitted %}
+        {% elif form_submitted and not plans %}
         <p class="no-results-message" id="noResultsMessage" data-translate="no_results">No crop recommendations found for your criteria.</p>
         {% endif %}
     </div>
@@ -335,14 +332,13 @@
             errorMessage.textContent = message;
             errorMessage.classList.remove('hidden');
         } else {
-            console.error('Error message element not found, logging:', message);
+            console.error('No error message element found, logging:', message);
         }
     }
 
     // Function to fetch soil type based on location
     async function fetchSoilType(location) {
         try {
-            loadingOverlay.style.display = 'flex';
             console.log('Fetching soil type for:', location);
             const response = await fetch('/api/get_soil_type', {
                 method: 'POST',
@@ -355,76 +351,66 @@
                 soilTypeInput.value = data.soil_type;
                 soilTypeDisplay.textContent = `Detected Soil Type: ${data.soil_type}`;
                 soilTypeDisplay.classList.remove('hidden');
-                soilTypeInput.disabled = true;
                 manualSoilBtn.classList.remove('hidden');
                 if (errorMessage) errorMessage.classList.add('hidden');
             } else {
-                soilTypeInput.disabled = false;
+                soilTypeInput.value = '';
                 soilTypeDisplay.classList.add('hidden');
                 manualSoilBtn.classList.add('hidden');
                 showError('Unable to detect soil type. Please select manually.');
-                soilTypeInput.value = '';
             }
         } catch (error) {
             console.error('Error fetching soil type:', error);
-            soilTypeInput.disabled = false;
+            soilTypeInput.value = '';
             soilTypeDisplay.classList.add('hidden');
             manualSoilBtn.classList.add('hidden');
             showError('Error detecting soil type. Please select manually.');
-            soilTypeInput.value = '';
-        } finally {
-            loadingOverlay.style.display = 'none';
         }
     }
 
-    // Event listener for location input change
+    // Event listener for location input change with debouncing
+    let debounceTimer = null;
     locationInput.addEventListener('blur', () => {
         const location = locationInput.value.trim();
         if (location) {
-            fetchSoilType(location);
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                fetchSoilType(location);
+            }, 500);
         }
     });
 
     // Event listener for manual soil type selection
     manualSoilBtn.addEventListener('click', () => {
-        soilTypeInput.disabled = false;
+        soilTypeInput.value = '';
         soilTypeDisplay.classList.add('hidden');
         manualSoilBtn.classList.add('hidden');
-        soilTypeInput.value = '';
         showError('Please select a soil type manually.');
     });
 
     // Form submission handler
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        loadingOverlay.style.display = 'flex';
-        submitBtn.disabled = true;
-        if (errorMessage) errorMessage.classList.add('hidden');
+    form.addEventListener('submit', (event) => {
+        const formData = new FormData(form);
+        const location = formData.get('location').trim();
+        const season = formData.get('season');
+        const soilType = formData.get('soil_type');
+        const landSize = formData.get('land_size').trim();
 
-        // Validate soil type before submission
-        if (!soilTypeInput.value) {
-            loadingOverlay.style.display = 'none';
-            submitBtn.disabled = false;
-            showError('Please select a soil type or ensure a valid location is provided.');
+        if (!location || !season || !soilType || !landSize) {
+            event.preventDefault();
+            showError('Please fill in all required fields.');
             return;
         }
 
-        const formData = new FormData(form);
-        try {
-            console.log('Submitting form to /crop_planning');
-            const response = await fetch('/crop_planning', {
-                method: 'POST',
-                body: formData
-            });
-            console.log('Response status:', response.status);
-            // Force reload with cache busting
-            window.location.href = '/crop_planning?t=' + new Date().getTime();
-        } catch (error) {
-            console.error('Form submission error:', error);
-            showError('An error occurred while fetching recommendations. Please try again.');
-            loadingOverlay.style.display = 'none';
-            submitBtn.disabled = false;
+        if (parseFloat(landSize) <= 0) {
+            event.preventDefault();
+            showError('Land size must be a positive number.');
+            return;
         }
+
+        loadingOverlay.style.display = 'flex';
+        submitBtn.disabled = true;
+        if (errorMessage) errorMessage.classList.add('hidden');
     });
 
     // Hide loader when page loads
