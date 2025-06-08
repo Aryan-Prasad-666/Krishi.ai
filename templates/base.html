@@ -166,25 +166,29 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="agricultureDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-translate="nav_agriculture">Agriculture</a>
                         <ul class="dropdown-menu" aria-labelledby="agricultureDropdown">
-                            <li><a class="dropdown-item" href="/crop-planning" data-translate="nav_crop_planning">Crop Planning</a></li>
-                            <li><a class="dropdown-item" href="/disease-detection" data-translate="nav_disease_detection">Disease Detection</a></li>
-                            <li><a class="dropdown-item" href="/pest-control" data-translate="nav_pest_control">Pest Control</a></li>
-                            <li><a class="dropdown-item" href="/weather-advisory" data-translate="nav_weather_advisory">Weather Advisory</a></li>
+                            <li><a class="dropdown-item" href="/crop_planning" data-translate="nav_crop_planning">Crop Planning</a></li>
+                            <li><a class="dropdown-item" href="/disease" data-translate="nav_disease_pest_control">Disease & Pest Control</a></li>
+                            <li><a class="dropdown-item" href="/weather_advisory" data-translate="nav_weather_advisory">Weather Advisory</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="financeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-translate="nav_financial_services">Financial Services</a>
                         <ul class="dropdown-menu" aria-labelledby="financeDropdown">
-                            <li><a class="dropdown-item" href="/microloan" data-translate="nav_microloan">Microloan Assistance</a></li>
-                            <li><a class="dropdown-item" href="/financial-records" data-translate="nav_financial_records">Financial Recordkeeping</a></li>
-                            <li><a class="dropdown-item" href="/schemes" data-translate="nav_schemes">Government Schemes</a></li>
+                            <li><a class="dropdown-item" href="/financial_assistant" data-translate="nav_financial_assistant">Financial Assistant</a></li>
+                            <li><a class="dropdown-item" href="/document_analyzer" data-translate="nav_document_analyzer">Document Analyzer</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="governanceDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-translate="nav_governance">Governance</a>
                         <ul class="dropdown-menu" aria-labelledby="governanceDropdown">
-                            <li><a class="dropdown-item" href="/legal-assistant" data-translate="nav_legal_assistant">Legal Assistant</a></li>
+                            <li><a class="dropdown-item" href="/legal_assistant" data-translate="nav_legal_assistant">Legal Assistant</a></li>
                             <li><a class="dropdown-item" href="/schemes" data-translate="nav_schemes">Government Schemes</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="livestockDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-translate="nav_livestock">Livestock</a>
+                        <ul class="dropdown-menu" aria-labelledby="livestockDropdown">
+                            <li><a class="dropdown-item" href="/veterinary_assistant" data-translate="nav_veterinary_assistant">Veterinary Assistant</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -229,14 +233,14 @@
                 <div class="col-lg-2 col-md-6 footer-section">
                     <h5 class="footer-heading" data-translate="footer_services">Services</h5>
                     <ul class="footer-links">
-                        <li><a href="/crop-planning" data-translate="footer_crop_planning">Crop Planning</a></li>
-                        <li><a href="/disease-detection" data-translate="footer_disease_detection">Disease Detection</a></li>
-                        <li><a href="/pest-control" data-translate="footer_pest_control">Pest Control</a></li>
-                        <li><a href="/weather-advisory" data-translate="footer_weather_advisory">Weather Advisory</a></li>
-                        <li><a href="/microloan" data-translate="footer_microloans">Microloans</a></li>
-                        <li><a href="/financial-records" data-translate="footer_financial_records">Financial Recordkeeping</a></li>
-                        <li><a href="/schemes" data-translate="footer_schemes">Govt. Schemes</a></li>
-                        <li><a href="/legal-assistant" data-translate="footer_legal_assistant">Legal Assistant</a></li>
+                        <li><a href="/crop_planning" data-translate="footer_crop_planning">Crop Planning</a></li>
+                        <li><a href="/disease" data-translate="footer_disease_pest_control">Disease & Pest Control</a></li>
+                        <li><a href="/weather_advisory" data-translate="footer_weather_advisory">Weather Advisory</a></li>
+                        <li><a href="/financial_assistant" data-translate="footer_financial_assistant">Financial Assistant</a></li>
+                        <li><a href="/document_analyzer" data-translate="footer_document_analyzer">Document Analyzer</a></li>
+                        <li><a href="/legal_assistant" data-translate="footer_legal_assistant">Legal Assistant</a></li>
+                        <li><a href="/veterinary_assistant" data-translate="footer_veterinary_assistant">Veterinary Assistant</a></li>
+                        <li><a href="/schemes" data-translate="footer_schemes">Government Schemes</a></li>
                         <li><a href="/telegram" data-translate="footer_telegram">Telegram Bot</a></li>
                     </ul>
                 </div>
@@ -286,15 +290,16 @@
                 nav_home: "Home",
                 nav_agriculture: "Agriculture",
                 nav_crop_planning: "Crop Planning",
-                nav_disease_detection: "Disease Detection",
-                nav_pest_control: "Pest Control",
+                nav_disease_pest_control: "Disease & Pest Control",
                 nav_weather_advisory: "Weather Advisory",
                 nav_financial_services: "Financial Services",
-                nav_microloan: "Microloan Assistance",
-                nav_financial_records: "Financial Recordkeeping",
-                nav_schemes: "Government Schemes",
+                nav_financial_assistant: "Financial Assistant",
+                nav_document_analyzer: "Document Analyzer",
                 nav_governance: "Governance",
                 nav_legal_assistant: "Legal Assistant",
+                nav_schemes: "Government Schemes",
+                nav_livestock: "Livestock",
+                nav_veterinary_assistant: "Veterinary Assistant",
                 nav_about: "About Us",
                 nav_telegram: "Telegram Bot",
                 nav_language: "Language",
@@ -302,13 +307,13 @@
                 footer_description: "Empowering rural India with AI-driven solutions for agriculture, finance, and governance, fostering sustainable growth and resilience.",
                 footer_services: "Services",
                 footer_crop_planning: "Crop Planning",
-                footer_disease_detection: "Disease Detection",
-                footer_pest_control: "Pest Control",
+                footer_disease_pest_control: "Disease & Pest Control",
                 footer_weather_advisory: "Weather Advisory",
-                footer_microloans: "Microloans",
-                footer_financial_records: "Financial Recordkeeping",
-                footer_schemes: "Govt. Schemes",
+                footer_financial_assistant: "Financial Assistant",
+                footer_document_analyzer: "Document Analyzer",
                 footer_legal_assistant: "Legal Assistant",
+                footer_veterinary_assistant: "Veterinary Assistant",
+                footer_schemes: "Government Schemes",
                 footer_telegram: "Telegram Bot",
                 footer_company: "Company",
                 footer_about: "About Us",
@@ -343,15 +348,16 @@
                 nav_home: "होम",
                 nav_agriculture: "कृषि",
                 nav_crop_planning: "फसल योजना",
-                nav_disease_detection: "रोग पहचान",
-                nav_pest_control: "कीट नियंत्रण",
+                nav_disease_pest_control: "रोग और कीट नियंत्रण",
                 nav_weather_advisory: "मौसम सलाह",
                 nav_financial_services: "वित्तीय सेवाएँ",
-                nav_microloan: "माइक्रोलोन सहायता",
-                nav_financial_records: "वित्तीय रिकॉर्डकीपिंग",
-                nav_schemes: "सरकारी योजनाएँ",
+                nav_financial_assistant: "वित्तीय सहायक",
+                nav_document_analyzer: "दस्तावेज़ विश्लेषक",
                 nav_governance: "शासन",
                 nav_legal_assistant: "कानूनी सहायक",
+                nav_schemes: "सरकारी योजनाएँ",
+                nav_livestock: "पशुधन",
+                nav_veterinary_assistant: "पशु चिकित्सा सहायक",
                 nav_about: "हमारे बारे में",
                 nav_telegram: "टेलीग्राम बॉट",
                 nav_language: "भाषा",
@@ -359,13 +365,13 @@
                 footer_description: "ग्रामीण भारत को कृषि, वित्त और शासन के लिए एआई-संचालित समाधानों के साथ सशक्त बनाना, सतत विकास और लचीलापन को बढ़ावा देना।",
                 footer_services: "सेवाएँ",
                 footer_crop_planning: "फसल योजना",
-                footer_disease_detection: "रोग पहचान",
-                footer_pest_control: "कीट नियंत्रण",
+                footer_disease_pest_control: "रोग और कीट नियंत्रण",
                 footer_weather_advisory: "मौसम सलाह",
-                footer_microloans: "माइक्रोलोन",
-                footer_financial_records: "वित्तीय रिकॉर्डकीपिंग",
-                footer_schemes: "सरकारी योजनाएँ",
+                footer_financial_assistant: "वित्तीय सहायक",
+                footer_document_analyzer: "दस्तावेज़ विश्लेषक",
                 footer_legal_assistant: "कानूनी सहायक",
+                footer_veterinary_assistant: "पशु चिकित्सा सहायक",
+                footer_schemes: "सरकारी योजनाएँ",
                 footer_telegram: "टेलीग्राम बॉट",
                 footer_company: "कंपनी",
                 footer_about: "हमारे बारे में",
@@ -400,15 +406,16 @@
                 nav_home: "ಮುಖಪುಟ",
                 nav_agriculture: "ಕೃಷಿ",
                 nav_crop_planning: "ಬೆಳೆ ಯೋಜನೆ",
-                nav_disease_detection: "ರೋಗ ಪತ್ತೆ",
-                nav_pest_control: "ಕೀಟ ನಿಯಂತ್ರಣ",
+                nav_disease_pest_control: "ರೋಗ ಮತ್ತು ಕೀಟ ನಿಯಂತ್ರಣ",
                 nav_weather_advisory: "ಹವಾಮಾನ ಸಲಹೆ",
                 nav_financial_services: "ಆರ್ಥಿಕ ಸೇವೆಗಳು",
-                nav_microloan: "ಸಣ್ಣ ಸಾಲ ಸಹಾಯ",
-                nav_financial_records: "ಆರ್ಥಿಕ ದಾಖಲೆಗಳು",
-                nav_schemes: "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
+                nav_financial_assistant: "ಆರ್ಥಿಕ ಸಹಾಯಕ",
+                nav_document_analyzer: "ದಾಖಲೆ ವಿಶ್ಲೇಷಕ",
                 nav_governance: "ಆಡಳಿತ",
                 nav_legal_assistant: "ಕಾನೂನು ಸಹಾಯಕ",
+                nav_schemes: "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
+                nav_livestock: "ಪಶುಸಂಗೋಪನೆ",
+                nav_veterinary_assistant: "ಪಶುವೈದ್ಯಕೀಯ ಸಹಾಯಕ",
                 nav_about: "ನಮ್ಮ ಬಗ್ಗೆ",
                 nav_telegram: "ಟೆಲಿಗ್ರಾಮ್ ಬಾಟ್",
                 nav_language: "ಭಾಷೆ",
@@ -416,13 +423,13 @@
                 footer_description: "ಗ್ರಾಮೀಣ ಭಾರತವನ್ನು ಕೃಷಿ, ಆರ್ಥಿಕ ಮತ್ತು ಆಡಳಿತಕ್ಕಾಗಿ ಎಐ-ಚಾಲಿತ ಪರಿಹಾರಗಳೊಂದಿಗೆ ಸಬಲೀಕರಣಗೊಳಿಸುವುದು, ಸುಸ್ಥಿರ ಬೆಳವಣಿಗೆ ಮತ್ತು ಸ್ಥಿತಿಸ್ಥಾಪಕತ್ವವನ್ನು ಉತ್ತೇಜಿಸುವುದು。",
                 footer_services: "ಸೇವೆಗಳು",
                 footer_crop_planning: "ಬೆಳೆ ಯೋಜನೆ",
-                footer_disease_detection: "ರೋಗ ಪತ್ತೆ",
-                footer_pest_control: "ಕೀಟ ನಿಯಂತ್ರಣ",
+                footer_disease_pest_control: "ರೋಗ ಮತ್ತು ಕೀಟ ನಿಯಂತ್ರಣ",
                 footer_weather_advisory: "ಹವಾಮಾನ ಸಲಹೆ",
-                footer_microloans: "ಸಣ್ಣ ಸಾಲಗಳು",
-                footer_financial_records: "ಆರ್ಥಿಕ ದಾಖಲೆಗಳು",
-                footer_schemes: "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
+                footer_financial_assistant: "ಆರ್ಥಿಕ ಸಹಾಯಕ",
+                footer_document_analyzer: "ದಾಖಲೆ ವಿಶ್ಲೇಷಕ",
                 footer_legal_assistant: "ಕಾನೂನು ಸಹಾಯಕ",
+                footer_veterinary_assistant: "ಪಶುವೈದ್ಯಕೀಯ ಸಹಾಯಕ",
+                footer_schemes: "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
                 footer_telegram: "ಟೆಲಿಗ್ರಾಮ್ ಬಾಟ್",
                 footer_company: "ಕಂಪನಿ",
                 footer_about: "ನಮ್ಮ ಬಗ್ಗೆ",
@@ -432,7 +439,7 @@
                 footer_address: "123 ಗ್ರಾಮೀಣ ಹಬ್, ಬೆಂಗಳೂರು, ಕರ್ನಾಟಕ, ಭಾರತ",
                 footer_phone: "+91 9876543210",
                 footer_email: "support@krishi.ai",
-                footer_copyright: "© 2025 ಕೃಷಿ.ಎಐ. ಎಲ್ಲಾ ಹಕ್ಕುಗಳು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.",
+                footer_copyright: "© 2025 ಕೃಷಿ.ಎಐ. ಎಲ್ಲಾ ಹಕ್ಕುಗಳು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ。",
                 footer_privacy: "ಗೌಪ್ಯತೆ ನೀತಿ",
                 footer_terms: "ಸೇವೆಯ ಷರತ್ತುಗಳು",
                 lang_en: "ಇಂಗ್ಲಿಷ್",

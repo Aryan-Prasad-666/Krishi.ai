@@ -377,6 +377,39 @@
 
 {% block scripts %}
 <script>
+
+    translations.en = {
+    ...translations.en || {},
+    disease_title: "Crop Disease Detection",
+    disease_description: "Upload an image of your crop to identify potential diseases and receive tailored treatment recommendations.",
+    form_image_placeholder: "Choose an image",
+    form_submit: "Analyze Image",
+    disease_result_title: "Analysis Results",
+    resources_title: "Resources",
+    no_result: "No disease analysis results found. Please try uploading a different image."
+};
+
+translations.hi = {
+    ...translations.hi || {},
+    disease_title: "फसल रोग पहचान",
+    disease_description: "अपनी फसल की एक छवि अपलोड करें ताकि संभावित रोगों की पहचान हो सके और अनुकूलित उपचार सिफारिशें प्राप्त हो सकें।",
+    form_image_placeholder: "एक छवि चुनें",
+    form_submit: "छवि का विश्लेषण करें",
+    disease_result_title: "विश्लेषण परिणाम",
+    resources_title: "संसाधन",
+    no_result: "कोई रोग विश्लेषण परिणाम नहीं मिला। कृपया एक अलग छवि अपलोड करने का प्रयास करें।"
+};
+
+translations.kn = {
+    ...translations.kn || {},
+    disease_title: "ಬೆಳೆ ರೋಗ ಪತ್ತೆ",
+    disease_description: "ಸಂಭಾವ್ಯ ರೋಗಗಳನ್ನು ಗುರುತಿಸಲು ಮತ್ತು ಕಸ್ಟಮೈಸ್ಡ್ ಚಿಕಿತ್ಸೆ ಶಿಫಾರಸುಗಳನ್ನು ಪಡೆಯಲು ನಿಮ್ಮ ಬೆಳೆಯ ಚಿತ್ರವನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ.",
+    form_image_placeholder: "ಒಂದು ಚಿತ್ರವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+    form_submit: "ಚಿತ್ರವನ್ನು ವಿಶ್ಲೇಷಿಸಿ",
+    disease_result_title: "ವಿಶ್ಲೇಷಣೆ ಫಲಿತಾಂಶಗಳು",
+    resources_title: "ಸಂಪನ್ಮೂಲಗಳು",
+    no_result: "ಯಾವುದೇ ರೋಗ ವಿಶ್ಲೇಷಣೆ ಫಲಿತಾಂಶಗಳು ಕಂಡುಬಂದಿಲ್ಲ. ದಯವಿಟ್ಟು ಬೇರೆ ಚಿತ್ರವನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ."
+};
     // Animate elements on scroll
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {

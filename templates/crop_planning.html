@@ -303,6 +303,48 @@
 
 {% block scripts %}
 <script>
+
+        translations.en = {
+        ...translations.en || {},
+        crop_planning_title: "Crop Planning",
+        crop_planning_description: "Enter your location, season, and land details to get personalized crop recommendations for your farm.",
+        form_location_placeholder: "e.g., Assam",
+        form_season_placeholder: "Select season",
+        form_soil_type_placeholder: "Select soil type",
+        form_land_size_placeholder: "e.g., 2.5",
+        form_submit: "Get Crop Recommendations",
+        manual_soil_btn: "Select soil type manually",
+        crop_results_title: "Recommended Crops",
+        no_results: "No crop recommendations found for your criteria."
+    };
+
+    translations.hi = {
+        ...translations.hi || {},
+        crop_planning_title: "फसल योजना",
+        crop_planning_description: "अपने खेत के लिए व्यक्तिगत फसल सिफारिशें प्राप्त करने के लिए अपनी स्थान, मौसम और भूमि विवरण दर्ज करें।",
+        form_location_placeholder: "उदाहरण, असम",
+        form_season_placeholder: "मौसम चुनें",
+        form_soil_type_placeholder: "मिट्टी का प्रकार चुनें",
+        form_land_size_placeholder: "उदाहरण, 2.5",
+        form_submit: "फसल सिफारिशें प्राप्त करें",
+        manual_soil_btn: "मिट्टी का प्रकार मैन्युअल रूप से चुनें",
+        crop_results_title: "अनुशंसित फसलें",
+        no_results: "आपके मानदंडों के लिए कोई फसल सिफारिशें नहीं मिलीं।"
+    };
+
+    translations.kn = {
+        ...translations.kn || {},
+        crop_planning_title: "ಬೆಳೆ ಯೋಜನೆ",
+        crop_planning_description: "ನಿಮ್ಮ ಜಮೀನಿಗೆ ವೈಯಕ್ತಿಕ ಬೆಳೆ ಶಿಫಾರಸುಗಳನ್ನು ಪಡೆಯಲು ನಿಮ್ಮ ಸ್ಥಳ, ಋತು ಮತ್ತು ಭೂಮಿಯ ವಿವರಗಳನ್ನು ನಮೂದಿಸಿ.",
+        form_location_placeholder: "ಉದಾಹರಣೆಗೆ, ಅಸ್ಸಾಂ",
+        form_season_placeholder: "ಋತು ಆಯ್ಕೆಮಾಡಿ",
+        form_soil_type_placeholder: "ಮಣ್ಣಿನ ಪ್ರಕಾರವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+        form_land_size_placeholder: "ಉದಾಹರಣೆಗೆ, 2.5",
+        form_submit: "ಬೆಳೆ ಶಿಫಾರಸುಗಳನ್ನು ಪಡೆಯಿರಿ",
+        manual_soil_btn: "ಮಣ್ಣಿನ ಪ್ರಕಾರವನ್ನು ಕೈಯಾರೆ ಆಯ್ಕೆಮಾಡಿ",
+        crop_results_title: "ಶಿಫಾರಸು ಮಾಡಲಾದ ಬೆಳೆಗಳು",
+        no_results: "ನಿಮ್ಮ ಮಾನದಂಡಗಳಿಗೆ ಯಾವುದೇ ಬೆಳೆ ಶಿಫಾರಸುಗಳು ಕಂಡುಬಂದಿಲ್ಲ."
+    };
     // Animate elements on scroll
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
