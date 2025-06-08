@@ -1237,5 +1237,9 @@ def weather_advisory_data():
         logger.error(f"Server error: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
+@app.route('/telegram')
+def telegram():
+    return render_template('telegram.html')
+
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=5000)
