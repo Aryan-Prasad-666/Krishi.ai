@@ -1,0 +1,70 @@
+```json
+[
+  {
+    "name": "Chief Minister Raitha Vidya Nidhi",
+    "category": "Education",
+    "description": "Financial assistance for children of farmers",
+    "link": "https://raitamitra.karnataka.gov.in/english"
+  },
+  {
+    "name": "Pradhan Mantri KIsan SAmman Nidhi (PM KISAN)",
+    "category": "Financial Assistance",
+    "description": "Income support to all landholding farmer families",
+    "link": "https://raitamitra.karnataka.gov.in/english"
+  },
+  {
+    "name": "Karnataka Raitha Siri",
+    "category": "Financial Assistance",
+    "description": "Financial assistance to millet farmers",
+    "link": "https://www.jaagrukbharat.com/list-of-top-agriculture-schemes-in-india-2024-with-features-eligibility-1402163"
+  },
+  {
+    "name": "Savayava Siri",
+    "category": "Organic Farming",
+    "description": "Promotion of organic farming",
+    "link": "https://raitamitra.karnataka.gov.in/english"
+  },
+  {
+    "name": "Rashtriya Krishi Vikas Yojana(RKVY RAFTAAR)",
+    "category": "Agricultural Development",
+    "description": "Enhancing investment in agriculture and promoting agri-entrepreneurship",
+    "link": "https://raitamitra.karnataka.gov.in/english"
+  },
+  {
+    "name": "LIVESTOCK INSURANCE SCHEME",
+    "category": "Animal Husbandry",
+    "description": "Insurance for livestock",
+    "link": "https://www.manage.gov.in/fpoacademy/SGSchemes/karnataka.pdf"
+  },
+  {
+    "name": "Karnataka Raitha Samruddhi Yojane",
+    "category": "Agricultural Development",
+    "description": "Promoting sustainable and lucrative agriculture",
+    "link": "https://www.thehindubusinessline.com/economy/agri-business/karnatakas-new-agri-scheme-to-make-farming-sustainable-lucrative/article67853797.ece"
+  },
+  {
+    "name": "Karnataka Surya Raitha Scheme",
+    "category": "Energy",
+    "description": "Providing solar-powered pump sets for irrigation",
+    "link": "https://energy.vikaspedia.in/viewcontent/energy/policy-support/state-wise/karnataka-surya-raitha-scheme?lgn=en"
+  },
+  {
+    "name": "Comprehensive Horticulture Development Scheme-2.0",
+    "category": "Horticulture",
+    "description": "Technological advancements in horticulture",
+    "link": "https://www.deccanherald.com/india/karnataka/karnataka-budget-new-tech-micro-irrigation-renewed-focus-on-agriculture-sector-3436822"
+  },
+  {
+    "name": "Suvarna Krishi Grama Yojane",
+    "category": "Agricultural Development",
+    "description": "Holistic development of agriculture in selected villages",
+    "link": "https://reliefweb.int/report/india/golden-agriculture-village-scheme-karnataka-farmers"
+  },
+  {
+    "name": "Krishi Bhagya Scheme",
+    "category": "Agricultural Development",
+    "description": "Scheme for dry-land farmers",
+    "link": "https://rawe2020.in/wp-content/uploads/2022/11/VINOD-seminar-2-report.pdf"
+  }
+]
+```

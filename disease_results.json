@@ -1,0 +1,33 @@
+{
+  "disease": "Powdery mildew",
+  "plant": "Cherry",
+  "symptoms": "Powdery mildew is characterized by white or gray powdery spots on the surfaces of leaves, stems, and sometimes fruits. These spots can expand to cover large portions of the plant. Severely affected leaves may turn yellow or brown and eventually die.",
+  "remedies": "Natural: Prune infected areas to improve air circulation. Apply neem oil or potassium bicarbonate spray weekly. Chemical: Use myclobutanil or sulfur-based fungicides, following label instructions, especially during humid conditions. Prevent: Plant cherry varieties with powdery mildew resistance. Ensure good air circulation by proper spacing and pruning. Avoid overhead watering to reduce humidity. Regularly monitor plants for early signs of infection and act promptly.",
+  "resources": [
+    {
+      "title": "Cherry Powdery Mildew | WSU Tree Fruit",
+      "link": "https://treefruit.wsu.edu/crop-protection/disease-management/cherry-powdery-mildew/",
+      "summary": "Discusses that humid conditions favor cherry powdery mildew and that a well-pruned canopy will promote more air flow and leaf drying, reducing these humid conditions favorable for the disease."
+    },
+    {
+      "title": "Management of Cherry Powdery Mildew",
+      "link": "https://www.canr.msu.edu/uploads/files/Research_Center/NW_Mich_Hort/Pests_IPM_Mgmt/MgmtCherryPowderyMildew.pdf",
+      "summary": "Details the use of strobilurins as effective fungicides in mildew suppression, also noting their efficacy in controlling leaf spot."
+    },
+    {
+      "title": "Pest Management Guide for Cherries - OSU Extension Service",
+      "link": "https://extension.oregonstate.edu/sites/extd8/files/documents/em8329.pdf",
+      "summary": "A guide listing recommendations for insect, mite, and disease control in cherry orchards, including chemicals, formulations, and application rates."
+    },
+    {
+      "title": "Cherry Powdery Mildew Handout (English and Spanish)",
+      "link": "https://treefruit.wsu.edu/cherry-powdery-mildew-handout-english-and-spanish/",
+      "summary": "Provides a handout in both English and Spanish regarding cherry powdery mildew, supported by the WSU Tree Fruit Endowment."
+    },
+    {
+      "title": "IPM Note: Cherry Powdery Mildew",
+      "link": "https://s3-us-west-2.amazonaws.com/treefruit.wsu.edu/wp-content/uploads/2017/05/CPM_2017-5-09.pdf",
+      "summary": "Explains that powdery mildews do not need free water to germinate, but germination and fungal growth are favored by high humidity."
+    }
+  ]
+}

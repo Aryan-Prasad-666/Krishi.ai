@@ -1,0 +1,893 @@
+from flask import Flask, render_template, request, jsonify
+import json
+import os
+import re
+import requests
+import base64
+from dotenv import load_dotenv
+from crewai import Agent, Task, Crew, LLM
+from crewai_tools import SerperDevTool
+from crewai.tools import BaseTool
+from pydantic import BaseModel, Field
+from typing import List, Dict, Any
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+import logging
+from langchain_core.runnables import RunnableWithMessageHistory
+from langchain_core.chat_history import InMemoryChatMessageHistory
+from langchain_core.prompts import PromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
+from mem0 import MemoryClient
+from PIL import Image
+import pypdf
+import docx
+
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# Load environment variables
+load_dotenv()
+app = Flask(__name__)
+
+# Setup API keys
+gemini_api_key = os.getenv('GEMINI_API_KEY')
+serper_api_key = os.getenv('SERPER_API_KEY')
+mem0_api_key = os.getenv('MEM0_API_KEY')
+
+# Initialize LLM for CrewAI
+llm = LLM(
+    model="gemini/gemini-2.0-flash",
+    temperature=0.7,
+    api_key=gemini_api_key
+)
+
+# Initialize LLM for LangChain
+langchain_llm = ChatGoogleGenerativeAI(
+    model="gemini-2.0-flash",
+    temperature=0.7,
+    api_key=gemini_api_key
+)
+
+# Initialize Mem0 client
+mem0_client = MemoryClient(api_key=mem0_api_key)
+
+# Initialize SerperDevTool
+serper_tool = SerperDevTool(
+    api_key=serper_api_key,
+    n_results=50
+)
+
+# Pydantic model for scheme data
+class Scheme(BaseModel):
+    name: str
+    category: str
+    description: str
+    link: str
+
+# Pydantic model for disease detection results
+class DiseaseResult(BaseModel):
+    disease: str
+    plant: str
+    symptoms: str
+    remedies: str
+    resources: List[Dict[str, str]]
+
+# Custom tool to filter schemes based on user criteria
+class SchemeFilterTool(BaseTool):
+    name: str = Field(default="SchemeFilterTool", description="Filters schemes based on user criteria with priority.")
+    description: str = Field(default="Filters government schemes by prioritizing location, then occupation, then caste, gender, and landholding.")
+
+    def _run(self, schemes: List[Dict[str, Any]], user_data: dict) -> List[Dict[str, Any]]:
+        try:
+            filtered_schemes = []
+            for scheme in schemes:
+                location = user_data.get('location', '').lower()
+                occupation = user_data.get('occupation', '').lower()
+                caste = user_data.get('caste', '').lower()
+                gender = user_data.get('gender', '').lower()
+                landholding = user_data.get('landholding', '').lower()
+
+                name_lower = scheme.get('name', '').lower()
+                category_lower = scheme.get('category', '').lower()
+                desc_lower = scheme.get('description', '').lower()
+
+                location_match = (
+                    location in name_lower or
+                    location in desc_lower or
+                    location in scheme.get('link', '').lower() or
+                    'assam' in desc_lower
+                )
+
+                occupation_match = (
+                    occupation in category_lower or
+                    occupation in desc_lower or
+                    'farmer' in desc_lower or
+                    'agriculture' in category_lower or
+                    'agribusiness' in category_lower
+                )
+
+                other_match = (
+                    caste in desc_lower or
+                    gender in desc_lower or
+                    (landholding and (
+                        'land' in desc_lower or
+                        'small' in desc_lower or
+                        'marginal' in desc_lower or
+                        landholding in desc_lower
+                    ))
+                )
+
+                if location_match or occupation_match or other_match:
+                    filtered_schemes.append(scheme)
+
+            filtered_schemes.sort(key=lambda x: (
+                user_data.get('location', '').lower() not in x.get('description', '').lower() and
+                user_data.get('location', '').lower() not in x.get('name', '').lower() and
+                user_data.get('location', '').lower() not in x.get('link', '').lower(),
+                user_data.get('occupation', '').lower() not in x.get('category', '').lower() and
+                user_data.get('occupation', '').lower() not in x.get('description', '').lower()
+            ))
+            return filtered_schemes[:20]
+        except Exception as e:
+            logger.error(f"Error filtering schemes: {str(e)}")
+            return f"Error filtering schemes: {e}"
+
+# Custom tool for crop disease detection
+class CropDiseaseAPI(BaseTool):
+    name: str = Field(default="CropDiseaseAPI", description="Tool to detect crop diseases from image using external ML API.")
+    description: str = Field(default="Identifies crop disease by sending base64 image to susya.onrender.com API.")
+
+    def _run(self, image_path: str) -> str:
+        try:
+            with open(image_path, "rb") as img_file:
+                imgdata = base64.b64encode(img_file.read()).decode("utf-8")
+            response = requests.post("https://susya.onrender.com", json={"image": imgdata})
+            response.raise_for_status()
+
+            data = json.loads(response.text)
+            disease = data.get("disease", "Unknown disease")
+            plant = data.get("plant", "Unknown plant")
+
+            return f"Disease: {disease}\nPlant: {plant}"
+        except Exception as e:
+            logger.error(f"Error calling Crop Disease API: {str(e)}")
+            return f"Error calling Crop Disease API: {e}"
+
+# Instantiate tools
+scheme_filter_tool = SchemeFilterTool()
+crop_disease_tool = CropDiseaseAPI()
+
+# Agents for schemes
+scheme_researcher = Agent(
+    role="Scheme Researcher",
+    goal="Search and filter government agricultural schemes based on user criteria, prioritizing location, then occupation, then other criteria.",
+    backstory="An expert in finding and filtering relevant government schemes for farmers using web search tools.",
+    tools=[serper_tool, scheme_filter_tool],
+    verbose=True,
+    llm=llm
+)
+
+# Agents for disease detection
+crop_disease_identifier = Agent(
+    role="Gemini Pathologist",
+    goal="Identify diseases in crops using image analysis tools.",
+    backstory="An AI crop doctor that uses ML APIs to detect diseases from crop images.",
+    tools=[crop_disease_tool],
+    verbose=True,
+    llm=llm
+)
+
+remedy_advisor = Agent(
+    role="Agro Remedy Consultant",
+    goal="Suggest effective solutions for crop diseases.",
+    backstory="An expert agronomist helping farmers treat plant infections.",
+    verbose=True,
+    llm=llm
+)
+
+resource_link_finder = Agent(
+    role="Agro Web Researcher",
+    goal="Find helpful guides and links about crop disease treatments.",
+    backstory="An AI assistant with access to the web for agricultural research.",
+    tools=[serper_tool],
+    verbose=True,
+    llm=llm
+)
+
+# Session histories for each assistant
+legal_assistant_history = InMemoryChatMessageHistory()
+veterinary_assistant_history = InMemoryChatMessageHistory()
+financial_assistant_history = InMemoryChatMessageHistory()
+
+def get_session_history(assistant_type: str):
+    MAX_MESSAGES = 5
+    histories = {
+        'legal': legal_assistant_history,
+        'veterinary': veterinary_assistant_history,
+        'financial': financial_assistant_history
+    }
+    history = histories.get(assistant_type, legal_assistant_history)
+    if len(history.messages) > MAX_MESSAGES:
+        history.messages = history.messages[-MAX_MESSAGES:]
+    return history
+
+# Routes
+@app.route('/')
+def index():
+    return render_template('home.html')
+
+@app.route('/schemes', methods=['GET', 'POST'])
+def schemes():
+    error_message = None
+    schemes = []
+    form_submitted = False
+    output_file = 'schemes_found.json'
+
+    if request.method == 'POST':
+        try:
+            user_data = {
+                'name': request.form.get('name', ''),
+                'age': request.form.get('age', ''),
+                'caste': request.form.get('caste', ''),
+                'location': request.form.get('location', ''),
+                'occupation': request.form.get('occupation', ''),
+                'gender': request.form.get('gender', ''),
+                'landholding': request.form.get('landholding', '')
+            }
+
+            required_fields = ['name', 'caste', 'location', 'occupation', 'gender', 'landholding']
+            if not all(user_data[field] for field in required_fields):
+                error_message = "All fields are required."
+                return render_template('schemes.html', error_message=error_message, schemes=schemes, form_submitted=True)
+
+            search_task = Task(
+                description=(
+                    f"Search for government agricultural schemes in India relevant to a {user_data['occupation']} "
+                    f"with caste {user_data['caste']}, gender {user_data['gender']}, located in {user_data['location']}, "
+                    f"and owning {user_data['landholding']} acres of land. Use the SchemeFilterTool to filter schemes "
+                    f"by prioritizing location, then occupation, then caste, gender, and landholding. "
+                    f"Return a JSON list of up to 50 schemes with name, category, description, and official link, "
+                    f"ensuring the output is a valid JSON string without markdown code fences, "
+                    f"compatible with the following schema: "
+                    f"{json.dumps([{'name': 'string', 'category': 'string', 'description': 'string', 'link': 'string'}])}"
+                ),
+                expected_output="A JSON list of up to 50 schemes with name, category, description, and link.",
+                agent=scheme_researcher,
+                output_file=output_file
+            )
+
+            crew = Crew(
+                agents=[scheme_researcher],
+                tasks=[search_task],
+                verbose=True
+            )
+
+            @retry(
+                stop=stop_after_attempt(3),
+                wait=wait_exponential(multiplier=1, min=4, max=10),
+                retry=retry_if_exception_type(Exception),
+                after=lambda retry_state: logger.debug(f"Retry attempt {retry_state.attempt_number} failed with {retry_state.outcome.exception()}")
+            )
+            def execute_crew():
+                return crew.kickoff()
+
+            try:
+                result = execute_crew()
+            except Exception as e:
+                logger.error(f"Crew execution failed after retries: {str(e)}")
+                error_message = "The scheme search service is temporarily unavailable. Please try again later."
+                return render_template('schemes.html', error_message=error_message, schemes=schemes, form_submitted=True)
+
+            try:
+                if os.path.exists(output_file):
+                    with open(output_file, 'r', encoding='utf-8') as f:
+                        content = f.read().strip()
+
+                    raw_output_file = 'schemes_found_raw.txt'
+                    with open(raw_output_file, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                    logger.debug(f"Raw output saved to {raw_output_file}: {content}")
+
+                    clean_content = content
+                    if content.startswith('```json') and content.endswith('```'):
+                        clean_content = '\n'.join(content.splitlines()[1:-1]).strip()
+                    elif content.startswith('```') and content.endswith('```'):
+                        clean_content = '\n'.join(content.splitlines()[1:-1]).strip()
+
+                    if not clean_content:
+                        error_message = "Output file is empty after cleaning."
+                        logger.error(error_message)
+                        return render_template('schemes.html', error_message=error_message, schemes=schemes, form_submitted=True)
+
+                    try:
+                        schemes_data = json.loads(clean_content)
+                    except json.JSONDecodeError as e:
+                        logger.error(f"Error parsing JSON from {output_file}: {e}")
+                        error_message = f"Error processing scheme data: {e}"
+                        return render_template('schemes.html', error_message=error_message, schemes=schemes, form_submitted=True)
+
+                    if not isinstance(schemes_data, list):
+                        error_message = "Schemes data is not a valid JSON list."
+                        logger.error(error_message)
+                        return render_template('schemes.html', error_message=error_message, schemes=schemes, form_submitted=True)
+
+                    with open(output_file, 'w', encoding='utf-8') as f:
+                        json.dump(schemes_data, f, indent=2)
+                    logger.debug(f"Saved cleaned JSON to {output_file}")
+
+                    schemes = [Scheme(**scheme) for scheme in schemes_data if isinstance(scheme, dict)]
+                    if not schemes:
+                        error_message = "No valid schemes found matching your criteria."
+                        logger.warning(error_message)
+                else:
+                    error_message = f"Output file {output_file} not found."
+                    logger.error(error_message)
+            except Exception as e:
+                logger.error(f"Error processing {output_file}: {e}")
+                error_message = f"Error processing scheme data: {e}"
+
+            form_submitted = True
+        except Exception as e:
+            logger.error(f"Error fetching scheme data: {e}")
+            error_message = "An unexpected error occurred during scheme search. Please try again later."
+
+    return render_template('schemes.html', schemes=schemes, error_message=error_message, form_submitted=form_submitted)
+
+@app.route('/disease', methods=['GET', 'POST'])
+def disease():
+    error_message = None
+    result = None
+    form_submitted = False
+    output_file = 'disease_results.json'
+    raw_output_file = 'disease_results_raw.txt'
+
+    if request.method == 'POST':
+        try:
+            if 'image' not in request.files:
+                error_message = "No image file uploaded."
+                return render_template('disease.html', error_message=error_message, result=result, form_submitted=True)
+
+            image = request.files['image']
+            if image.filename == '':
+                error_message = "No image file selected."
+                return render_template('disease.html', error_message=error_message, result=result, form_submitted=True)
+
+            image_path = os.path.join('uploads', image.filename)
+            os.makedirs('uploads', exist_ok=True)
+            image.save(image_path)
+
+            disease_identification_task = Task(
+                description=f"Use the CropDiseaseDetectionAPI tool to identify the disease in the crop image at path: {image_path}. Return the name of the disease, the plant affected, and a brief description of symptoms in a JSON-compatible dictionary format: {{'disease': 'string', 'plant': 'string', 'symptoms': 'string'}}.",
+                expected_output="A JSON dictionary with disease name, plant, and symptoms.",
+                agent=crop_disease_identifier,
+                output_format='json'
+            )
+
+            remedy_task = Task(
+                description=f"Provide a concise remedy description (approximately 100 words) for the identified crop disease, covering natural and chemical treatments and prevention advice as a single string. Do not use JSON structure or markdown fences. Example: 'Natural: Prune infected leaves, apply baking soda spray (1 tbsp/gallon water) weekly. Chemical: Use chlorothalonil every 7-10 days. Prevent: Plant resistant varieties, rotate crops, water at base.'",
+                expected_output="A string of remedies (approx. 100 words).",
+                agent=remedy_advisor
+            )
+
+            resource_links_task = Task(
+                description="Search the internet for tutorials, guides, or PDFs on how to treat the identified crop disease. Return a JSON list of 3-5 resources with title, link, and summary: [{'title': 'string', 'link': 'string', 'summary': 'string'}].",
+                expected_output="A JSON list of 3-5 resources with title, link, and summary.",
+                agent=resource_link_finder,
+                output_file=output_file,
+                output_format='json'
+            )
+
+            crew = Crew(
+                agents=[crop_disease_identifier, remedy_advisor, resource_link_finder],
+                tasks=[disease_identification_task, remedy_task, resource_links_task],
+                verbose=True
+            )
+
+            @retry(
+                stop=stop_after_attempt(3),
+                wait=wait_exponential(multiplier=1, min=4, max=10),
+                retry=retry_if_exception_type(Exception),
+                after=lambda retry_state: logger.debug(f"Retry attempt {retry_state.attempt_number} failed with {retry_state.outcome.exception()}")
+            )
+            def execute_crew():
+                return crew.kickoff()
+
+            try:
+                crew_result = execute_crew()
+            except Exception as e:
+                logger.error(f"Crew execution failed after retries: {str(e)}")
+                error_message = "The disease detection service is temporarily unavailable. Please try again later."
+                return render_template('disease.html', error_message=error_message, result=result, form_submitted=True)
+
+            try:
+                if os.path.exists(output_file):
+                    with open(output_file, 'r', encoding='utf-8') as f:
+                        content = f.read().strip()
+
+                    with open(raw_output_file, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                    logger.debug(f"Raw output saved to {raw_output_file}: {content}")
+
+                    clean_content = content
+                    if content.startswith('```json') and content.endswith('```'):
+                        clean_content = '\n'.join(content.splitlines()[1:-1]).strip()
+                    elif content.startswith('```') and content.endswith('```'):
+                        clean_content = '\n'.join(content.splitlines()[1:-1]).strip()
+
+                    if not clean_content:
+                        error_message = "Output file is empty after cleaning."
+                        logger.error(error_message)
+                        return render_template('disease.html', error_message=error_message, result=result, form_submitted=True)
+
+                    try:
+                        resources_data = json.loads(clean_content)
+                    except json.JSONDecodeError as e:
+                        logger.error(f"Error parsing JSON from {output_file}: {e}")
+                        error_message = "Error processing disease analysis results. Please try again."
+                        return render_template('disease.html', error_message=error_message, result=result, form_submitted=True)
+
+                    if not isinstance(resources_data, list):
+                        error_message = "Resources data is not a valid JSON list."
+                        logger.error(error_message)
+                        return render_template('disease.html', error_message=error_message, result=result, form_submitted=True)
+
+                    remedy_output = remedy_task.output.raw if remedy_task.output else ""
+                    if remedy_output:
+                        try:
+                            remedy_data = json.loads(remedy_output)
+                            if isinstance(remedy_data, dict) and 'remedies' in remedy_data:
+                                remedy_output = (
+                                    f"Natural: {remedy_data['remedies'].get('natural', '')}. "
+                                    f"Chemical: {remedy_data['remedies'].get('chemical', '')}. "
+                                    f"Prevent: {remedy_data['remedies'].get('prevention', '')}."
+                                )
+                        except json.JSONDecodeError:
+                            pass
+
+                        words = remedy_output.split()
+                        if len(words) > 110:
+                            remedy_output = ' '.join(words[:100]) + '...'
+                            logger.debug(f"Truncated remedies to ~100 words: {remedy_output}")
+
+                    disease_output = disease_identification_task.output.raw if disease_identification_task.output else "{}"
+                    try:
+                        disease_data = json.loads(disease_output) if disease_output else {}
+                    except json.JSONDecodeError:
+                        disease_data = {
+                            'disease': 'Unknown',
+                            'plant': 'Unknown',
+                            'symptoms': disease_output or 'No symptoms identified.'
+                        }
+                        logger.warning(f"Failed to parse disease_output as JSON, using fallback: {disease_output}")
+
+                    result = {
+                        'disease': disease_data.get('disease', 'Unknown'),
+                        'plant': disease_data.get('plant', 'Unknown'),
+                        'symptoms': disease_data.get('symptoms', 'No symptoms identified.'),
+                        'remedies': remedy_output,
+                        'resources': resources_data
+                    }
+
+                    with open(output_file, 'w', encoding='utf-8') as f:
+                        json.dump(result, f, indent=2)
+                    logger.debug(f"Saved cleaned JSON to {output_file}")
+
+                    result = DiseaseResult(
+                        disease=result['disease'],
+                        plant=result['plant'],
+                        symptoms=result['symptoms'],
+                        remedies=result['remedies'],
+                        resources=result['resources']
+                    )
+                else:
+                    error_message = f"Output file {output_file} not found."
+                    logger.error(error_message)
+            except Exception as e:
+                logger.error(f"Error processing {output_file}: {e}")
+                error_message = f"Error processing disease analysis results: {str(e)}"
+
+            form_submitted = True
+
+            if os.path.exists(image_path):
+                os.remove(image_path)
+
+        except Exception as e:
+            logger.error(f"Error processing disease detection: {str(e)}")
+            error_message = "An unexpected error occurred during disease detection. Please try again later."
+
+    return render_template('disease.html', error_message=error_message, result=result, form_submitted=form_submitted)
+
+@app.route('/legal_assistant')
+def legal_assistant():
+    lang = request.args.get('lang', 'en')
+    messages = [
+        {"role": "user" if msg.__class__.__name__ == "HumanMessage" else "assistant", "content": msg.content}
+        for msg in get_session_history('legal').messages
+    ]
+    return render_template('legal_assistant.html', lang=lang, messages=messages)
+
+@app.route('/legal_assistant', methods=['POST'])
+def legal_assistant_post():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        required_fields = ['userInput', 'language']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({"error": f"Missing or empty field: {field}"}), 400
+
+        query = data['userInput'].strip()
+        language = data['language'].strip().lower()
+
+        valid_languages = ['en', 'hi', 'kn']
+        if language not in valid_languages:
+            logger.warning(f"Invalid language '{language}', defaulting to 'en'")
+            language = 'en'
+
+        language_names = {'en': 'English', 'hi': 'Hindi', 'kn': 'Kannada'}
+        language_name = language_names[language]
+
+        prompt_template = PromptTemplate(
+            input_variables=["query", "language_name"],
+            template=""" 
+            You are a friendly legal assistant for rural Indian farmers. Provide a clear and concise answer to the following legal question related to agricultural laws, land disputes, or government schemes. The answer must be in {language_name} and tailored to the Indian context (e.g., referencing Indian laws, government schemes, or local authorities). Limit the response to 3-5 sentences for brevity. Use simple language suitable for farmers and avoid legal jargon. If the question is too vague or unrelated to agricultural legal issues, return a polite message indicating the need for a more specific legal question.
+
+            Question: {query}
+
+            Instructions:
+            - Answer in {language_name}, using simple and clear language.
+            - Focus on practical advice or information relevant to agricultural laws, land disputes, or government schemes in India.
+            - If unsure, suggest consulting a local lawyer or government office.
+            - Do not include markdown, code fences, or additional text—only the plain text response.
+            - Do not use any special symbols like *
+            - If user is greeting, then you also greet
+
+            Example (for English):
+            For a land dispute, first check your land records at the local Tehsildar office. Ensure you have documents like the sale deed or Khatauni. File a complaint with the Tehsildar if someone encroaches on your land. You can also seek help from a local lawyer or the Legal Services Authority for free advice.
+            """
+        )
+
+        prompt = prompt_template.format(
+            query=query,
+            language_name=language_name
+        )
+
+        try:
+            logger.debug(f"Sending prompt to Gemini: {prompt[:200]}...")
+            response = langchain_llm.invoke(prompt)
+            logger.debug(f"Gemini response: {response.content}")
+
+            answer = response.content.strip()
+            if not answer:
+                logger.warning("Empty response from Gemini")
+                answer = "No answer found. Please ask a more specific legal question."
+
+            # Store the conversation in Mem0
+            mem0_client.add(
+                messages=[
+                    {"role": "user", "content": query},
+                    {"role": "assistant", "content": answer}
+                ],
+                user_id="aryan",
+                output_format="v1.1"
+            )
+
+            # Add to session history
+            session_history = get_session_history('legal')
+            session_history.add_user_message(query)
+            session_history.add_ai_message(answer)
+
+            return jsonify({"response": answer}), 200
+
+        except Exception as e:
+            logger.error(f"Gemini query error: {str(e)}")
+            return jsonify({"error": "Error processing query. Please try again later."}), 503
+
+    except Exception as e:
+        logger.error(f"Server error: {str(e)}")
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+@app.route('/veterinary_assistant')
+def veterinary_assistant():
+    lang = request.args.get('lang', 'en')
+    messages = [
+        {"role": "user" if msg.__class__.__name__ == "HumanMessage" else "assistant", "content": msg.content}
+        for msg in get_session_history('veterinary').messages
+    ]
+    return render_template('veterinary_assistant.html', lang=lang, messages=messages)
+
+@app.route('/veterinary_assistant', methods=['POST'])
+def veterinary_assistant_post():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        required_fields = ['userInput', 'language']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({"error": f"Missing or empty field: {field}"}), 400
+
+        query = data['userInput'].strip()
+        language = data['language'].strip().lower()
+
+        valid_languages = ['en', 'hi', 'kn']
+        if language not in valid_languages:
+            logger.warning(f"Invalid language '{language}', defaulting to 'en'")
+            language = 'en'
+
+        language_names = {'en': 'English', 'hi': 'Hindi', 'kn': 'Kannada'}
+        language_name = language_names[language]
+
+        prompt_template = PromptTemplate(
+            input_variables=["query", "language_name"],
+            template=""" 
+            You are a friendly veterinary assistant for rural Indian farmers. Provide a clear and concise answer to the following question related to livestock health, animal diseases, or veterinary care. The answer must be in {language_name} and tailored to the Indian context (e.g., referencing common Indian livestock, local remedies, or veterinary services). Limit the response to 3-5 sentences for brevity. Use simple language suitable for farmers and avoid technical jargon. If the question is too vague or unrelated to livestock health, return a polite message indicating the need for a more specific question.
+
+            Question: {query}
+
+            Instructions:
+            - Answer in {language_name}, using simple and clear language.
+            - Focus on practical advice or information relevant to livestock health, animal diseases, or veterinary care in India.
+            - If unsure, suggest consulting a local veterinarian or government veterinary office.
+            - Do not include markdown, code fences, or additional text—only the plain text response.
+            - Do not use any special symbols like *
+            - If user is greeting, then you also greet
+
+            Example (for English):
+            If your cow has a fever, keep it in a cool, shaded area and provide plenty of water. Check for symptoms like reduced milk or difficulty breathing. Contact a local veterinarian for medicines like paracetamol or antibiotics. You can also visit the nearest government veterinary hospital for free or low-cost treatment.
+            """
+        )
+
+        prompt = prompt_template.format(
+            query=query,
+            language_name=language_name
+        )
+
+        try:
+            logger.debug(f"Sending prompt to Gemini: {prompt[:200]}...")
+            response = langchain_llm.invoke(prompt)
+            logger.debug(f"Gemini response: {response.content}")
+
+            answer = response.content.strip()
+            if not answer:
+                logger.warning("Empty response from Gemini")
+                answer = "No answer found. Please ask a more specific veterinary question."
+
+            # Store the conversation in Mem0
+            mem0_client.add(
+                messages=[
+                    {"role": "user", "content": query},
+                    {"role": "assistant", "content": answer}
+                ],
+                user_id="aryan",
+                output_format="v1.1"
+            )
+
+            # Add to session history
+            session_history = get_session_history('veterinary')
+            session_history.add_user_message(query)
+            session_history.add_ai_message(answer)
+
+            return jsonify({"response": answer}), 200
+
+        except Exception as e:
+            logger.error(f"Gemini query error: {str(e)}")
+            return jsonify({"error": "Error processing query. Please try again later."}), 503
+
+    except Exception as e:
+        logger.error(f"Server error: {str(e)}")
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+@app.route('/financial_assistant')
+def financial_assistant():
+    lang = request.args.get('lang', 'en')
+    messages = [
+        {"role": "user" if msg.__class__.__name__ == "HumanMessage" else "assistant", "content": msg.content}
+        for msg in get_session_history('financial').messages
+    ]
+    return render_template('financial_assistant.html', lang=lang, messages=messages)
+
+@app.route('/financial_assistant', methods=['POST'])
+def financial_assistant_post():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        required_fields = ['userInput', 'language']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({"error": f"Missing or empty field: {field}"}), 400
+
+        query = data['userInput'].strip()
+        language = data['language'].strip().lower()
+
+        valid_languages = ['en', 'hi', 'kn']
+        if language not in valid_languages:
+            logger.warning(f"Invalid language '{language}', defaulting to 'en'")
+            language = 'en'
+
+        language_names = {'en': 'English', 'hi': 'Hindi', 'kn': 'Kannada'}
+        language_name = language_names[language]
+
+        prompt_template = PromptTemplate(
+            input_variables=["query", "language_name"],
+            template=""" 
+            You are a friendly financial assistant for rural Indian farmers. Provide a clear and concise answer to the following question related to agricultural loans, subsidies, or financial schemes. The answer must be in {language_name} and tailored to the Indian context (e.g., referencing Indian banks, government schemes, or local financial institutions). Limit the response to 3-5 sentences for brevity. Use simple language suitable for farmers and avoid financial jargon. If the question is too vague or unrelated to agricultural finance, return a polite message indicating the need for a more specific financial question.
+
+            Question: {query}
+
+            Instructions:
+            - Answer in {language_name}, using simple and clear language.
+            - Focus on practical advice or information relevant to agricultural loans, subsidies, or financial schemes in India.
+            - If unsure, suggest consulting a local bank or government agriculture office.
+            - Do not include markdown, code fences, or additional text—only the plain text response.
+            - Do not use any special symbols like *
+            - If user is greeting, then you also greet
+
+            Example (for English):
+            To get a farm loan, visit a nearby cooperative bank or national bank like SBI with your land documents and Kisan Credit Card. Loans under PM-KISAN offer low interest rates for small farmers. Check with your local agriculture office for subsidies on seeds or equipment. Always read loan terms carefully before signing.
+            """
+        )
+
+        prompt = prompt_template.format(
+            query=query,
+            language_name=language_name
+        )
+
+        try:
+            logger.debug(f"Sending prompt to Gemini: {prompt[:200]}...")
+            response = langchain_llm.invoke(prompt)
+            logger.debug(f"Gemini response: {response.content}")
+
+            answer = response.content.strip()
+            if not answer:
+                logger.warning("Empty response from Gemini")
+                answer = "No answer found. Please ask a more specific financial question."
+
+            # Store the conversation in Mem0
+            mem0_client.add(
+                messages=[
+                    {"role": "user", "content": query},
+                    {"role": "assistant", "content": answer}
+                ],
+                user_id="aryan",
+                output_format="v1.1"
+            )
+
+            # Add to session history
+            session_history = get_session_history('financial')
+            session_history.add_user_message(query)
+            session_history.add_ai_message(answer)
+
+            return jsonify({"response": answer}), 200
+
+        except Exception as e:
+            logger.error(f"Gemini query error: {str(e)}")
+            return jsonify({"error": "Error processing query. Please try again later."}), 503
+
+    except Exception as e:
+        logger.error(f"Server error: {str(e)}")
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+@app.route('/document_analyzer')
+def document_analyzer():
+    lang = request.args.get('lang', 'en')
+    return render_template('document_analyzer.html', lang=lang)
+
+@app.route('/analyze_document', methods=['POST'])
+def analyze_document():
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "No file provided"}), 400
+
+        file = request.files['file']
+        document_type = request.form.get('document_type', 'other')
+        language = request.form.get('language', 'en')
+
+        if not file.filename:
+            return jsonify({"error": "No file selected"}), 400
+
+        # Validate file type
+        allowed_extensions = {'pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'}
+        if file.filename.rsplit('.', 1)[-1].lower() not in allowed_extensions:
+            return jsonify({"error": "Unsupported file type. Use PDF, JPG, PNG, DOC, or DOCX."}), 400
+
+        # Basic content extraction (simulated OCR for images/PDFs, direct for DOCX)
+        content = ""
+        if file.filename.endswith('.pdf'):
+            pdf_reader = pypdf.PdfReader(file)
+            for page in pdf_reader.pages:
+                content += page.extract_text() or ""
+        elif file.filename.endswith(('.jpg', '.jpeg', '.png')):
+            image = Image.open(file)
+            content = f"Sample {document_type} document content extracted from image."
+        elif file.filename.endswith(('.doc', '.docx')):
+            doc = docx.Document(file)
+            content = "\n".join([para.text for para in doc.paragraphs])
+
+        if not content.strip():
+            content = f"Placeholder content for {document_type} document."
+
+        # Define prompt template
+        prompt_template = PromptTemplate(
+            input_variables=["content", "document_type", "language"],
+            template=""" 
+            You are a financial document analysis assistant for India. Analyze the provided document content and provide guidance for filling it out correctly. The document type is '{document_type}' and the output must be in '{language}'.
+
+            Document Content:
+            {content}
+
+            Instructions:
+            - Analyze the document content and identify its purpose and requirements.
+            - Provide the following in '{language}':
+              - Summary: A brief description of the document's purpose (1-2 sentences).
+              - Required Information: A list of 3-5 key fields or details needed to complete the document.
+              - Filing Instructions: A list of 3-5 steps to correctly fill out or submit the document.
+              - Important Notes: Any additional guidance or requirements (e.g., supporting documents, mandatory fields).
+            - Return a JSON object with translations for English, Hindi, and Kannada, even if the requested language is only one of them.
+            - Ensure the JSON is valid and properly formatted.
+            - Do not include markdown or extra text, only the JSON object.
+
+            Example Output:
+            {{
+                "en": {{
+                    "summary": "This is a loan application form requiring personal and financial details.",
+                    "required_info": ["Name and address", "Monthly income", "Loan amount", "Purpose of loan", "Repayment period"],
+                    "instructions": ["Fill in personal details in BLOCK LETTERS", "Provide accurate income", "State loan purpose clearly", "Include bank details", "Sign the form"],
+                    "notes": "Attach Aadhaar/PAN, address proof, and income proof. All fields marked with * are mandatory."
+                }},
+                "hi": {{
+                    "summary": "यह एक ऋण आवेदन पत्र है जिसमें व्यक्तिगत और वित्तीय विवरण की आवश्यकता है।",
+                    "required_info": ["नाम और पता", "मासिक आय", "ऋण राशि", "ऋण का उद्देश्य", "पुनर्भुगतान अवधि"],
+                    "instructions": ["व्यक्तिगत विवरण बड़े अक्षरों में भरें", "सटीक आय प्रदान करें", "ऋण का उद्देश्य स्पष्ट करें", "बैंक विवरण शामिल करें", "फॉर्म पर हस्ताक्षर करें"],
+                    "notes": "आधार/पैन, पते का प्रमाण और आय प्रमाण संलग्न करें। * के साथ चिह्नित सभी फ़ील्ड अनिवार्य हैं।"
+                }},
+                "kn": {{
+                    "summary": "ಇದು ವೈಯಕ್ತಿಕ ಮತ್ತು ಆರ್ಥಿಕ ವಿವರಗಳನ್ನು ಕೋರುವ ಸಾಲದ ಅರ್ಜಿ ನಮೂನೆಯಾಗಿದೆ.",
+                    "required_info": ["ಹೆಸರು ಮತ್ತು ವಿಳಾಸ", "ಮಾಸಿಕ ಆದಾಯ", "ಸಾಲದ ಮೊತ್ತ", "ಸಾಲದ ಉದ್ದೇಶ", "ಮರುಪಾವತಿ ಅವಧಿ"],
+                    "instructions": ["ವೈಯಕ್ತಿಕ ವಿವರಗಳನ್ನು ದೊಡ್ಡ ಅಕ್ಷರಗಳಲ್ಲಿ ಭರ್ತಿ ಮಾಡಿ", "ನಿಖರವಾದ ಆದಾಯವನ್ನು ಒದಗಿಸಿ", "ಸಾಲದ ಉದ್ದೇಶವನ್ನು ಸ್ಪಷ್ಟವಾಗಿ ತಿಳಿಸಿ", "ಬ್ಯಾಂಕ್ ವಿವರಗಳನ್ನು ಸೇರಿಸಿ", "ಫಾರ್ಮ್‌ಗೆ ಸಹಿ ಮಾಡಿ"],
+                    "notes": "ಆಧಾರ್/ಪ್ಯಾನ್, ವಿಳಾಸದ ಪ್ರಮಾಣಪತ್ರ ಮತ್ತು ಆದಾಯದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಲಗತ್ತಿಸಿ. * ಗುರುತಿನ ಎಲ್ಲಾ ಕ್ಷೇತ್ರಗಳು ಕಡ್ಡಾಯವಾಗಿವೆ."
+                }}
+            }}
+            """
+        )
+
+        prompt = prompt_template.format(
+            content=content[:1000],
+            document_type=document_type,
+            language={'en': 'English', 'hi': 'Hindi', 'kn': 'Kannada'}[language]
+        )
+
+        try:
+            logger.debug(f"Sending prompt to Gemini: {prompt[:200]}...")
+            response = langchain_llm.invoke(prompt)
+            logger.debug(f"Raw Gemini response: {response.content}")
+
+            response_content = response.content.strip()
+            response_content = re.sub(r'^```json\s*|\s*```$', '', response_content).strip()
+            logger.debug(f"Cleaned Gemini response: {response_content}")
+
+            analysis = json.loads(response_content)
+            if not isinstance(analysis, dict) or not all(lang in analysis for lang in ['en', 'hi', 'kn']):
+                logger.error("Invalid analysis response format")
+                return jsonify({"error": "Invalid analysis response"}), 500
+
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.error(f"Error parsing Gemini response: {str(e)}")
+            return jsonify({"error": "Failed to parse analysis response"}), 500
+        except Exception as e:
+            logger.error(f"Gemini query error: {str(e)}")
+            return jsonify({"error": f"Analysis error: {str(e)}"}), 500
+
+        return jsonify({"analysis": analysis}), 200
+
+    except Exception as e:
+        logger.error(f"Server error: {str(e)}")
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True, host='127.0.0.1', port=5000)
