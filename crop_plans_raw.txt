@@ -1,34 +1,28 @@
 ```json
 [
   {
-    "crop_name": "Rice",
+    "crop_name": "Maize",
     "sowing_time": "June - July",
-    "cultivation_tips": "Ensure proper water management and drainage. Use high-yielding varieties suitable for alluvial soil. Apply fertilizers based on soil testing.",
+    "cultivation_tips": "Ensure good drainage. Apply appropriate fertilizers based on soil testing. Control pests and diseases.",
     "expected_yield": "20-25 quintals/acre"
   },
   {
-    "crop_name": "Maize",
+    "crop_name": "Red Gram (Pigeon Pea)",
     "sowing_time": "June - July",
-    "cultivation_tips": "Select hybrid varieties. Ensure good drainage. Apply balanced fertilizers and micronutrients. Practice intercropping with pulses.",
-    "expected_yield": "18-20 quintals/acre"
+    "cultivation_tips": "Prepare the land to a fine tilth. Apply FYM or composted coir pith. Ensure proper drainage to prevent waterlogging.",
+    "expected_yield": "8-12 quintals/acre"
   },
   {
-    "crop_name": "Pigeon Pea (Tur)",
+    "crop_name": "Groundnut",
     "sowing_time": "June - July",
-    "cultivation_tips": "Use improved varieties. Provide proper drainage. Apply phosphatic fertilizers. Implement integrated pest management.",
-    "expected_yield": "10-12 quintals/acre"
+    "cultivation_tips": "Select high-yielding varieties. Treat seeds before sowing. Provide adequate irrigation during critical growth stages.",
+    "expected_yield": "10-15 quintals/acre"
   },
   {
-    "crop_name": "Pearl Millet (Bajra)",
-    "sowing_time": "July",
-    "cultivation_tips": "Sow with the onset of monsoon. Use drought-resistant varieties. Apply nitrogenous fertilizers. Practice timely weeding.",
-    "expected_yield": "8-10 quintals/acre"
-  },
-  {
-    "crop_name": "Green Gram (Moong)",
+    "crop_name": "Ragi (Finger Millet)",
     "sowing_time": "June - July",
-    "cultivation_tips": "Select early-maturing varieties. Ensure proper drainage. Apply Rhizobium culture for nitrogen fixation. Practice intercropping.",
-    "expected_yield": "6-8 quintals/acre"
+    "cultivation_tips": "Use organic matter to enrich the soil. Ensure proper drainage. Control weeds regularly.",
+    "expected_yield": "15-20 quintals/acre"
   }
 ]
 ```

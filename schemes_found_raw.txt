@@ -1,16 +1,22 @@
 ```json
 [
   {
-    "name": "Mukhya Mantri Krishi Sa Sajuli Yozana",
-    "category": "Agriculture",
-    "description": "A State Owned Priority Development (SOPD) scheme for farmers launched by the Assam government in FY 2018-",
-    "link": "https://www.myscheme.gov.in/schemes/mmkssy-assam"
+    "name": "National Mission on Agriculture Extension Technology (NMAET)",
+    "category": "Agriculture Extension",
+    "description": "Focuses on improving agricultural extension services and technology dissemination to farmers.",
+    "link": "https://agri-horti.assam.gov.in/schemes"
   },
   {
-    "name": "Agriculture Department, Assam",
-    "category": "Agriculture",
-    "description": "Educating farmers in sustainable and commercial agriculture",
-    "link": "https://assam.mygov.in/en/group/agriculture-department-assam/"
+    "name": "Equity Grant Scheme",
+    "category": "Financial Assistance",
+    "description": "Provides financial assistance to farmers for various agricultural activities.",
+    "link": "https://agri-horti.assam.gov.in/schemes/equity-grant-scheme-egs"
+  },
+  {
+    "name": "NMAET: Sub-Mission on Agricultural Mechanization (SMAM)",
+    "category": "Agricultural Mechanization",
+    "description": "Promotes agricultural mechanization to increase productivity and reduce drudgery for farmers.",
+    "link": "https://diragri.assam.gov.in/portlet-innerpage/schemes-and-program-0"
   },
   {
     "name": "Assam Mukhyamantri Krishi Sa Sajuli Yojna",
@@ -19,106 +25,100 @@
     "link": "https://govtschemes.in/assam-mukhyamantri-krishi-sa-sajuli-yojna"
   },
   {
-    "name": "Assam Farmers Credit Subsidy Scheme Articles",
-    "category": "Finance",
-    "description": "Samagra Gramya Unnayan Yojana (CMSGUY) for farmers",
+    "name": "Samagra Gramya Unnayan Yojana (CMSGUY)",
+    "category": "Rural Development",
+    "description": "Aims of doubling the income of the farmers.",
     "link": "https://www.indiafilings.com/learn/tag/assam-farmers-credit-subsidy-scheme/"
   },
   {
-    "name": "Assam Farmer's Credit Subsidy Scheme",
-    "category": "Finance",
-    "description": "Financial assistance to the farmers, where 25% of the crop loans will be waived off",
-    "link": "https://www.indiafilings.com/learn/assam-farmers-credit-subsidy-scheme/"
+    "name": "Assam Tractor Distribution Scheme 2025",
+    "category": "Agricultural Mechanization",
+    "description": "Offers farmers up to 70% subsidy on tractors",
+    "link": "https://pmujjwalayojana.in/assam-tractor-distribution-scheme-cmsguy/"
   },
   {
-    "name": "Prime Minister Agricultural Irrigation Scheme(WDC - PMKSY)",
-    "category": "Irrigation",
-    "description": "Project Wise No. of Farmers Benefitted Under Prime Minister Agricultural Irrigation Scheme(WDC - PMKSY)",
-    "link": "https://wdcpmksy.dolr.gov.in/getProjWisePMKSYDetails?dcode=283&stname=ASSAM&distname=DARRANG"
+    "name": "Assam Agribusiness and Rural Transformation Project",
+    "category": "Agribusiness",
+    "description": "add value and improve resilience of selected agriculture value chains, focusing on smallholder farmers and",
+    "link": "https://www.arias.in/apart.html"
   },
   {
-    "name": "Schemes",
-    "category": "Multiple",
-    "description": "Government Of Assam Department of Agriculture & Horticulture Schemes",
+    "name": "Momai Tamuli Barbaruah Krishak Bondhu Scheme",
+    "category": "Agriculture",
+    "description": "enable the farmers to do double cropping in their single cropping paddy land",
+    "link": "https://assamtimes.org/node/13416"
+  },
+  {
+    "name": "National Food Security Mission (NFSM)",
+    "category": "Agriculture",
+    "description": "Various components under NFSM to increase production of rice, wheat, pulses, coarse cereals and nutri-cereals through area expansion and productivity enhancement in a sustainable manner in the identified districts of the country.",
     "link": "https://agri-horti.assam.gov.in/schemes"
   },
   {
-    "name": "Schemes and Program",
-    "category": "Multiple",
-    "description": "Schemes and Program",
+    "name": "National Mission for Sustainable Agriculture (NMSA)",
+    "category": "Agriculture",
+    "description": "Promotes sustainable agriculture practices to enhance agricultural productivity and income.",
+    "link": "https://agri-horti.assam.gov.in/schemes"
+  },
+  {
+    "name": "Rashtriya Krishi Vikas Yojana (RKVY)",
+    "category": "Agriculture Development",
+    "description": "Aims at achieving 4% annual growth in agriculture sector by ensuring holistic development of agriculture and allied sectors.",
+    "link": "https://agri-horti.assam.gov.in/schemes/rashtriya-krishi-vikas-yojana-rkvy-0"
+  },
+  {
+    "name": "Credit Guarantee Fund Scheme (CGFS)",
+    "category": "Financial Assistance",
+    "description": "Provides credit guarantee to banks and financial institutions for lending to the agriculture sector.",
+    "link": "https://agri-horti.assam.gov.in/schemes/credit-guarantee-fund-scheme-cgfs"
+  },
+  {
+    "name": "Bringing Green Revolution to Eastern India",
+    "category": "Agriculture Development",
+    "description": "Aims to increase agricultural production and productivity in eastern India through various interventions.",
     "link": "https://diragri.assam.gov.in/portlet-innerpage/schemes-and-program-0"
   },
   {
     "name": "Assam Farmer's Credit Subsidy Scheme (AFCSS)",
-    "category": "Finance",
-    "description": "25% reimbursement (subsidy) on short term crop loans upto maximum cap of Rs. 25000",
+    "category": "Credit Subsidy",
+    "description": "Provides 25% reimbursement (subsidy) on short term crop loans upto maximum cap of Rs. 25000.",
     "link": "https://schemes.vikaspedia.in/viewcontent/schemesall/state-specific-schemes/welfare-schemes-of-assam/assam-farmer-s-credit-subsidy-scheme--afcss-?lgn=en"
   },
   {
-    "name": "Saansad Adarsh Gram Yojana (SAGY)",
-    "category": "Rural Development",
-    "description": "Saansad Adarsh Gram Yojana (SAGY)",
-    "link": "https://nirdpr.org.in/nird_docs/sagy/Assam.pdf"
-  },
-  {
-    "name": "Assam Agribusiness and Rural Transformation Project",
+   "name": "Mukhya Mantri Krishi Sa Sajuli Yozana",
     "category": "Agriculture",
-    "description": "Add value and improve resilience of selected agriculture value chains",
-    "link": "https://arias.in/apart.html"
-  },
-  {
-    "name": "Financial Assistance Schemes of the Assam Government",
-    "category": "Finance",
-    "description": "Improvement in agricultural productivity through credit for the acquisition of agricultural tools and equipment",
-    "link": "https://www.corpseed.com/knowledge-centre/financial-assistance-schemes-of-the-assam-government"
-  },
-  {
-    "name": "Assam Tractor Scheme",
-    "category": "Agriculture",
-    "description": "Tractor distribution scheme",
-    "link": "https://phed.amtron.in/as/scheme-page/assam-tractor-scheme-under-cmsguy"
-  },
-  {
-    "name": "Schemes",
-    "category": "Agriculture",
-    "description": "MukhyaMantri Krishi Sa-Sajuli Yojana(MMKSSY)- Financial assistance of Rs 5000/- to the small and marginal farmers.",
+    "description": "Financial assistance of Rs 5000/- to the small and marginal farmers.",
     "link": "https://morigaon.gov.in/departments/detail/schemes"
   },
   {
-    "name": "Schemes for Welfare of Farmers",
-    "category": "Agriculture",
-    "description": "Formation and Promotion of 10,000 Farmer Producer Organizations (FPOs)",
+    "name": "Pradhan Mantri Kisan MaanDhan Yojana (PM-KMY)",
+    "category": "Pension Scheme",
+    "description": "Provides pension to small and marginal farmers.",
     "link": "https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=2002012"
   },
   {
-    "name": "Agri Stack Registration",
-    "category": "Agriculture",
-    "description": "Registering on Agri Stack, farmers become eligible for various government schemes",
-    "link": "https://agristack.net/"
+   "name": "Integrated Horticulture Development",
+    "category": "Horticulture",
+    "description": "New Zero Interest Crop Loan Scheme 2023 for the farmers in budget",
+    "link": "https://www.myscheme.gov.in/schemes/ihd"
   },
   {
-    "name": "Biponi scheme",
-    "category": "Business",
-    "description": "Promote the growth of small businesses, farmers, and artisans in the state.",
-    "link": "https://www.myscheme.gov.in/schemes/bps"
-  },
-  {
-    "name": "Market Research and Information Network Scheme",
-    "category": "Agriculture",
-    "description": "Market Research and Information Network Scheme",
-    "link": "http://asamb.in/node.php?u=mrin"
-  },
-  {
-    "name": "Market Research and Information Network scheme",
-    "category": "Agriculture",
-    "description": "Market Research and Information Network scheme",
+   "name": "Market Research and Information Network Scheme",
+    "category": "Agriculture Marketing",
+    "description": "Grading & Standardisation of Agricultural Produce (grading, packaging, storage, transportation etc.)",
     "link": "http://asamb.in/node.php?u=mrin"
   },
   {
     "name": "Schemes & Grants for Farmers",
     "category": "Agriculture",
-    "description": "Grants-in aid to Eri, Muga & Mulberry rearers",
+    "description": "Grants-in aid to Eri, Muga & Mulberry rearers for increase of Eri, Muga &. Mulberry seed and commercial cocoon.",
     "link": "https://silks.csb.gov.in/hailakandi/schemes-grants-for-farmers/"
+  },
+  {
+    "name": "New Agricultural Marketing Infrastructure (AMI)",
+    "category": "Agriculture Marketing",
+    "description": "sub scheme of ISAM",
+    "link": "https://www.nabard.org/content1.aspx?id=23&catid=23&mid=530"
   }
 ]
 ```

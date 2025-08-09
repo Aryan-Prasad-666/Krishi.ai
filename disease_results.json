@@ -1,33 +1,33 @@
 {
-  "disease": "Late blight",
-  "plant": "Tomato",
-  "symptoms": "Symptoms of late blight include the appearance of dark, water-soaked spots on leaves, which rapidly enlarge and may be accompanied by a white, cottony growth on the undersides. Stems and fruits can also be affected, leading to significant yield losses if not controlled.",
-  "remedies": "Natural: Remove and destroy infected leaves and fruit promptly. Apply copper-based fungicides or neem oil weekly as a preventative. Ensure good air circulation. Chemical: Use protectant fungicides like chlorothalonil or mancozeb preventatively, rotating with systemic fungicides like mefenoxam or protectants like fluazinam if disease appears. Follow label instructions carefully. Prevent: Select disease-resistant tomato varieties. Practice crop rotation, avoiding planting tomatoes in the same area for at least three years. Avoid overhead watering to reduce leaf wetness and humidity.",
+  "disease": "Powdery mildew",
+  "plant": "Cherry",
+  "symptoms": "Powdery mildew on cherry presents as a white to gray powdery growth on leaves, stems, and fruit, potentially causing leaf distortion and reduced fruit quality.",
+  "remedies": "Prune infected branches to improve air circulation. Apply neem oil every 7-14 days as a natural fungicide. Use sulfur-based fungicides preventatively. Spray with potassium bicarbonate solutions to disrupt fungal growth. Ensure good air circulation around trees. Remove and destroy fallen leaves and infected fruit. Water at the base of the tree to avoid wetting foliage. Select cherry varieties with powdery mildew resistance. Apply a copper-based fungicide early in the season. Monitor trees regularly for early signs of infection.",
   "resources": [
     {
-      "title": "Late Blight of Tomatoes | Extension | West Virginia University",
-      "link": "https://extension.wvu.edu/lawn-gardening-pests/plant-disease/fruit-vegetable-diseases/late-blight-tomatoes",
-      "summary": "Provides information on identifying and treating late blight in tomatoes, including the recommendation to continue weekly spray applications and to remove and destroy severely infected plants."
+      "title": "Cherry Powdery Mildew | WSU Tree Fruit",
+      "link": "https://treefruit.wsu.edu/crop-protection/disease-management/cherry-powdery-mildew/",
+      "summary": "Powdery mildew of sweet and sour cherry is caused by Podosphaera clandestina, an obligate biotrophic fungus. Mid- and late-season sweet cherry ..."
     },
     {
-      "title": "Tomato Late Blight | NC State Extension Publications",
-      "link": "https://content.ces.ncsu.edu/tomato-late-blight",
-      "summary": "Offers guidance on applying fungicides preventatively and after disease detection, emphasizing the importance of alternating products for effective control."
+      "title": "[PDF] Management of Cherry Powdery Mildew - Michigan State University",
+      "link": "https://www.canr.msu.edu/uploads/files/Research_Center/NW_Mich_Hort/Pests_IPM_Mgmt/MgmtCherryPowderyMildew.pdf",
+      "summary": "Strobilurins are currently the fungicides most effective in mildew suppression; these fungicides are also excellent for controlling leaf spot and very good to ..."
     },
     {
-      "title": "Tomato Blight: How to Prevent and Treat ... | MasterClass",
-      "link": "https://www.masterclass.com/articles/tomato-blight-guide",
-      "summary": "Details the essential step of removing and destroying any affected area of the tomato plant as a primary treatment method."
+      "title": "[PDF] Pest Management Guide for Cherries - OSU Extension Service",
+      "link": "https://extension.oregonstate.edu/sites/extd8/files/documents/em8329.pdf",
+      "summary": "This guide lists recommendations for insect, mite and disease control in cherry orchards. The chemicals, formulations and application rates listed here are ..."
     },
     {
-      "title": "Tomato Late Blight: Identification and Management",
-      "link": "https://barron.extension.wisc.edu/files/2023/02/Tomato-Late-Blight.pdf",
-      "summary": "Outlines strategies for managing late blight, including planting resistant cultivars and eliminating volunteer tomato plants."
+      "title": "Cherry Powdery Mildew Handout (English and Spanish)",
+      "link": "https://treefruit.wsu.edu/cherry-powdery-mildew-handout-english-and-spanish/",
+      "summary": "Cherry Powdery Mildew Handout (English and Spanish). Dowload Handout (pdf) \u00b7 Baje la guia en Espa\u00f1ol (pdf). Suppported by the WSU Tree Fruit Endowment."
     },
     {
-      "title": "How to Identify, Control and Prevent Blight on Your Tomatoes | GardenTech",
-      "link": "https://www.gardentech.com/blog/pest-id-and-prevention/fight-blight-on-your-tomatoes",
-      "summary": "Recommends removing affected leaves, disposing of them properly, and mulching around the base of the plant to prevent the spread of blight."
+      "title": "[PDF] A Guide to Managing Tree Fruit Pests in the Home Garden - Gov.bc.ca",
+      "link": "https://www2.gov.bc.ca/assets/gov/farming-natural-resources-and-industry/agriculture-and-seafood/animal-and-crops/plant-health/fruitspray.pdf",
+      "summary": "This guide provides cultural practices and recommended pesticides to control common diseases and insect pests of fruit trees in the home garden in."
     }
   ]
 }

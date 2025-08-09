@@ -23,50 +23,41 @@ import docx
 from datetime import datetime
 from datetime import timedelta 
 
-# Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Load environment variables
 load_dotenv()
 app = Flask(__name__)
 
-# Setup API keys
 gemini_api_key = os.getenv('GEMINI_API_KEY')
 serper_api_key = os.getenv('SERPER_API_KEY')
 mem0_api_key = os.getenv('MEM0_API_KEY')
 
-# Initialize LLM for CrewAI
 llm = LLM(
     model="gemini/gemini-2.0-flash",
     temperature=0.7,
     api_key=gemini_api_key
 )
 
-# Initialize LLM for LangChain
 langchain_llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash",
     temperature=0.7,
     api_key=gemini_api_key
 )
 
-# Initialize Mem0 client
 mem0_client = MemoryClient(api_key=mem0_api_key)
 
-# Initialize SerperDevTool
 serper_tool = SerperDevTool(
     api_key=serper_api_key,
     n_results=50
 )
 
-# Pydantic model for scheme data
 class Scheme(BaseModel):
     name: str
     category: str
     description: str
     link: str
 
-# Pydantic model for disease detection results
 class DiseaseResult(BaseModel):
     disease: str
     plant: str
@@ -74,14 +65,12 @@ class DiseaseResult(BaseModel):
     remedies: str
     resources: List[Dict[str, str]]
 
-# Pydantic model for crop planning results
 class CropPlan(BaseModel):
     crop_name: str
     sowing_time: str
     cultivation_tips: str
     expected_yield: str
 
-# Custom tool to filter schemes based on user criteria
 class SchemeFilterTool(BaseTool):
     name: str = Field(default="SchemeFilterTool", description="Filters schemes based on user criteria with priority.")
     description: str = Field(default="Filters government schemes by prioritizing location, then occupation, then caste, gender, and landholding.")
@@ -141,7 +130,6 @@ class SchemeFilterTool(BaseTool):
             logger.error(f"Error filtering schemes: {str(e)}")
             return f"Error filtering schemes: {e}"
 
-# Custom tool for crop disease detection
 class CropDiseaseAPI(BaseTool):
     name: str = Field(default="CropDiseaseAPI", description="Tool to detect crop diseases from image using external ML API.")
     description: str = Field(default="Identifies crop disease by sending base64 image to susya.onrender.com API.")
@@ -162,14 +150,12 @@ class CropDiseaseAPI(BaseTool):
             logger.error(f"Error calling Crop Disease API: {str(e)}")
             return f"Error calling Crop Disease API: {e}"
 
-# Custom tool for soil type detection
 class SoilTypeAPI(BaseTool):
     name: str = Field(default="SoilTypeAPI", description="Tool to detect soil type based on location.")
     description: str = Field(default="Identifies soil type by querying an external soil database API based on location.")
 
     def _run(self, location: str) -> str:
         try:
-            # Simulated API call (replace with actual soil database API if available)
             soil_map = {
                 'assam': 'Alluvial',
                 'punjab': 'Alluvial',
@@ -187,12 +173,10 @@ class SoilTypeAPI(BaseTool):
             logger.error(f"Error detecting soil type: {str(e)}")
             return 'Unknown'
 
-# Instantiate tools
 scheme_filter_tool = SchemeFilterTool()
 crop_disease_tool = CropDiseaseAPI()
 soil_type_tool = SoilTypeAPI()
 
-# Agent for crop planning
 crop_planner = Agent(
     role="Crop Planning Expert",
     goal="Generate personalized crop recommendations based on location, season, soil type, and land size.",
@@ -202,7 +186,6 @@ crop_planner = Agent(
     llm=llm
 )
 
-# Agents for schemes
 scheme_researcher = Agent(
     role="Scheme Researcher",
     goal="Search and filter government agricultural schemes based on user criteria, prioritizing location, then occupation, then other criteria.",
@@ -212,12 +195,10 @@ scheme_researcher = Agent(
     llm=llm
 )
 
-# Agents for disease detection
-crop_disease_identifier = Agent(
-    role="Gemini Pathologist",
-    goal="Identify diseases in crops using image analysis tools.",
-    backstory="An AI crop doctor that uses ML APIs to detect diseases from crop images.",
-    tools=[crop_disease_tool],
+symptoms_advisor = Agent(
+    role="Crop Symptoms Specialist",
+    goal="Identify and describe common symptoms of crop diseases.",
+    backstory="An AI agronomist specializing in recognizing and describing symptoms of crop diseases for farmers.",
     verbose=True,
     llm=llm
 )
@@ -239,7 +220,6 @@ resource_link_finder = Agent(
     llm=llm
 )
 
-# Session histories for each assistant
 legal_assistant_history = InMemoryChatMessageHistory()
 veterinary_assistant_history = InMemoryChatMessageHistory()
 financial_assistant_history = InMemoryChatMessageHistory()
@@ -256,7 +236,6 @@ def get_session_history(assistant_type: str):
         history.messages = history.messages[-MAX_MESSAGES:]
     return history
 
-# Routes
 @app.route('/')
 def index():
     return render_template('home.html')
@@ -531,21 +510,34 @@ def disease():
             os.makedirs('uploads', exist_ok=True)
             image.save(image_path)
 
-            disease_identification_task = Task(
-                description=f"Use the CropDiseaseDetectionAPI tool to identify the disease in the crop image at path: {image_path}. Return the name of the disease, the plant affected, and a brief description of symptoms in a JSON-compatible dictionary format: {{'disease': 'string', 'plant': 'string', 'symptoms': 'string'}}.",
-                expected_output="A JSON dictionary with disease name, plant, and symptoms.",
-                agent=crop_disease_identifier,
-                output_format='json'
+            try:
+                with open(image_path, "rb") as img_file:
+                    imgdata = base64.b64encode(img_file.read()).decode("utf-8")
+                response = requests.post("https://susya.onrender.com", json={"image": imgdata})
+                response.raise_for_status()
+
+                disease_data = json.loads(response.text)
+                disease = disease_data.get("disease", "Unknown disease")
+                plant = disease_data.get("plant", "Unknown plant")
+            except Exception as e:
+                logger.error(f"Error calling Crop Disease API: {str(e)}")
+                error_message = f"Error calling Crop Disease API: {str(e)}"
+                return render_template('disease.html', error_message=error_message, result=result, form_submitted=True)
+
+            symptoms_task = Task(
+                description=f"For the identified crop disease '{disease}' affecting '{plant}', provide a single concise sentence (15-25 words) describing the most prominent symptoms (e.g., leaf spots, wilting, discoloration). Example: 'Leaves show yellowing with black spots and wilting stems.'",
+                expected_output="A single sentence describing symptoms (15-25 words).",
+                agent=symptoms_advisor
             )
 
-            remedy_task = Task(
-                description=f"Provide a concise remedy description (approximately 100 words) for the identified crop disease, covering natural and chemical treatments and prevention advice as a single string. Do not use JSON structure or markdown fences. Example: 'Natural: Prune infected leaves, apply baking soda spray (1 tbsp/gallon water) weekly. Chemical: Use chlorothalonil every 7-10 days. Prevent: Plant resistant varieties, rotate crops, water at base.'",
-                expected_output="A string of remedies (approx. 100 words).",
+            remedies_task = Task(
+                description=f"For the identified crop disease '{disease}' affecting '{plant}', provide exactly 10 concise remedy points (covering natural, chemical, and prevention advice) in 80-100 words total. Return a single string with period-separated sentences, suitable for splitting into list items. Example: 'Prune infected leaves. Apply neem oil weekly. Use chlorothalonil every 7 days. Rotate crops annually. Ensure proper drainage. Remove plant debris. Apply baking soda spray. Use resistant varieties. Avoid overhead watering. Monitor plants regularly.'",
+                expected_output="A string of 10 period-separated sentences describing remedies (80-100 words).",
                 agent=remedy_advisor
             )
 
             resource_links_task = Task(
-                description="Search the internet for tutorials, guides, or PDFs on how to treat the identified crop disease. Return a JSON list of 3-5 resources with title, link, and summary: [{'title': 'string', 'link': 'string', 'summary': 'string'}].",
+                description=f"Search the internet for tutorials, guides, or PDFs on how to treat the crop disease '{disease}' affecting '{plant}'. Return a JSON list of 3-5 resources with title, link, and summary: [{{'title': 'string', 'link': 'string', 'summary': 'string'}}].",
                 expected_output="A JSON list of 3-5 resources with title, link, and summary.",
                 agent=resource_link_finder,
                 output_file=output_file,
@@ -553,8 +545,8 @@ def disease():
             )
 
             crew = Crew(
-                agents=[crop_disease_identifier, remedy_advisor, resource_link_finder],
-                tasks=[disease_identification_task, remedy_task, resource_links_task],
+                agents=[symptoms_advisor, remedy_advisor, resource_link_finder],
+                tasks=[symptoms_task, remedies_task, resource_links_task],
                 verbose=True
             )
 
@@ -606,40 +598,47 @@ def disease():
                         logger.error(error_message)
                         return render_template('disease.html', error_message=error_message, result=result, form_submitted=True)
 
-                    remedy_output = remedy_task.output.raw if remedy_task.output else ""
-                    if remedy_output:
-                        try:
-                            remedy_data = json.loads(remedy_output)
-                            if isinstance(remedy_data, dict) and 'remedies' in remedy_data:
-                                remedy_output = (
-                                    f"Natural: {remedy_data['remedies'].get('natural', '')}. "
-                                    f"Chemical: {remedy_data['remedies'].get('chemical', '')}. "
-                                    f"Prevent: {remedy_data['remedies'].get('prevention', '')}."
-                                )
-                        except json.JSONDecodeError:
-                            pass
+                    symptoms_output = symptoms_task.output.raw if symptoms_task.output else "No symptoms identified."
+                    remedies_output = remedies_task.output.raw if remedies_task.output else "No remedies identified."
 
-                        words = remedy_output.split()
-                        if len(words) > 110:
-                            remedy_output = ' '.join(words[:100]) + '...'
-                            logger.debug(f"Truncated remedies to ~100 words: {remedy_output}")
+                    for output in [symptoms_output, remedies_output]:
+                        if output:
+                            try:
+                                data = json.loads(output)
+                                if isinstance(data, dict):
+                                    if output == symptoms_output:
+                                        symptoms_output = data.get('symptoms', 'No symptoms identified.')
+                                    else:
+                                        remedies_output = (
+                                            f"Natural: {data.get('natural', '')}. "
+                                            f"Chemical: {data.get('chemical', '')}. "
+                                            f"Prevent: {data.get('prevention', '')}."
+                                        ).strip()
+                            except json.JSONDecodeError:
+                                pass
 
-                    disease_output = disease_identification_task.output.raw if disease_identification_task.output else "{}"
-                    try:
-                        disease_data = json.loads(disease_output) if disease_output else {}
-                    except json.JSONDecodeError:
-                        disease_data = {
-                            'disease': 'Unknown',
-                            'plant': 'Unknown',
-                            'symptoms': disease_output or 'No symptoms identified.'
-                        }
-                        logger.warning(f"Failed to parse disease_output as JSON, using fallback: {disease_output}")
+                            sentences = [s.strip() for s in output.split('.') if s.strip()]
+                            output = '. '.join(sentences) + ('.' if sentences else '')
+                            if output == symptoms_output:
+                                symptoms_output = output
+                            else:
+                                remedies_output = output
+
+                            words = output.split()
+                            max_words = 25 if output == symptoms_output else 100
+                            if len(words) > max_words:
+                                output = ' '.join(words[:max_words-10]) + '...'
+                                logger.debug(f"Truncated {'symptoms' if output == symptoms_output else 'remedies'} to ~{max_words-10} words: {output}")
+                                if output == symptoms_output:
+                                    symptoms_output = output
+                                else:
+                                    remedies_output = output
 
                     result = {
-                        'disease': disease_data.get('disease', 'Unknown'),
-                        'plant': disease_data.get('plant', 'Unknown'),
-                        'symptoms': disease_data.get('symptoms', 'No symptoms identified.'),
-                        'remedies': remedy_output,
+                        'disease': disease,
+                        'plant': plant,
+                        'symptoms': symptoms_output,
+                        'remedies': remedies_output,
                         'resources': resources_data
                     }
 
